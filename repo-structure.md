@@ -27,11 +27,11 @@ sequenceDiagram
   participant E as ElevenLabs Agent
 
   U->>V: Submit {phone, lang, year, voice?}
-  V->>B: POST /api/call
-  B->>T: Calls.create(from, to, url=/twilio/voice?year&lang&voice)
+  V->>B: POST /outbound-call
+  B->>T: Calls.create(from, to, url=/outbound-call-twiml?year&lang&voice)
   T-->>B: 201 (Call SID)
-  T->>B: GET/POST /twilio/voice (on answer)
-  B-->>T: TwiML <Connect><Stream url="wss://.../media" params>
+  T->>B: GET/POST /outbound-call-twiml (on answer)
+  B-->>T: TwiML <Connect><Stream url="wss://.../outbound-media-stream" params>
   T->>W: Open WSS (bidirectional)
   W->>B: event=start {streamSid, params}
   B->>E: Conversation.start_session({year, language, voice_id, era_hint})
@@ -79,16 +79,16 @@ time-traveler/
 * **apps/web/** – Public UI (form).
 
   * `src/app/page.tsx` — landing form.
-  * *(Optional)* `src/app/api/call/route.ts` — proxy → backend `/api/call`.
+  * *(Optional)* `src/app/api/call/route.ts` — proxy → backend `/outbound-call`.
   * `src/components/` — `YearSlider`, `PhoneInput`, `VoiceSelect`.
   * **Env:** `apps/web/.env.local` with only `NEXT_PUBLIC_*` vars.
 
 * **apps/server/** – Backend (FastAPI).
 
-  * `app/main.py` — routes: `POST /api/call`, `GET|POST /twilio/voice`, `WS /media`.
+  * `app/main.py` — routes: `POST /outbound-call`, `GET|POST /outbound-call-twiml`, `WS /outbound-media-stream`.
   * `app/twilio_bridge.py` — μ-law 8k ↔ PCM16 16k bridge + barge-in handling.
   * `app/eleven_agent.py` — ElevenLabs Conversation bootstrap; session vars (year/lang/voice, era hint).
-  * `app/era_hints.py` — map year → era “vibe” strings (ES/EN).
+  * `app/era_hints.py` — map year → era "vibe" strings (ES/EN).
   * `app/settings.py` — env loader (pydantic-settings).
   * **Env:** `apps/server/.env` (secrets, git-ignored).
 
@@ -118,13 +118,13 @@ time-traveler/
 
 **Frontend (Next.js / Vercel)**
 
-* Posts to backend `POST /api/call` with body `{ to, lang, year}`.
+* Posts to backend `POST /outbound-call` with body `{ to, lang, year}`.
 
 **Backend (FastAPI)**
 
-* `POST /api/call` → Twilio `Calls.create(from, to, url=/twilio/voice?year&lang&voice)`
-* `GET|POST /twilio/voice` → TwiML `<Connect><Stream wss://.../media>` (pass year/lang/voice as `<Parameter>`).
-* `WS /media` → Handle Twilio events:
+* `POST /outbound-call` → Twilio `Calls.create(from, to, url=/outbound-call-twiml?year&lang&voice)`
+* `GET|POST /outbound-call-twiml` → TwiML `<Connect><Stream wss://.../outbound-media-stream>` (pass year/lang/voice as `<Parameter>`).
+* `WS /outbound-media-stream` → Handle Twilio events:
 
   * `start` — open ElevenLabs Conversation with session vars `{year, language, voice_id, era_hint}`.
   * `media` — convert Twilio μ-law 8k → PCM16 16k (if needed), feed agent; send agent audio back as base64 `media`.
@@ -188,7 +188,7 @@ poetry run uvicorn app.main:app --reload --port 8000
 ngrok http 8000   # copy HTTPS URL into apps/server/.env as PUBLIC_BASE_URL
 
 # Test a call (no UI yet)
-curl -X POST "$PUBLIC_BASE_URL/api/call" \
+curl -X POST "$PUBLIC_BASE_URL/outbound-call" \
   -H "Content-Type: application/json" \
   -d '{"to":"+34XXXXXXXXX","year":1580,"lang":"es"}'
 
@@ -199,7 +199,49 @@ pnpm dev
 # set NEXT_PUBLIC_BACKEND_URL in apps/web/.env.local to your server URL
 ```
 
+# right now, the chart looks like this
+
 ---
+```mermaid
+sequenceDiagram
+  autonumber
+  participant UI as Your UI (form/button)
+  participant API as FastAPI Server
+  participant Twilio as Twilio Voice (PSTN)
+  participant WS as /outbound-media-stream (WebSocket)
+  participant EL as ElevenLabs Conversation
+
+  UI->>API: POST /outbound-call (to=+34...)
+  API->>Twilio: REST calls.create(from, to, url=/outbound-call-twiml)
+  Note right of Twilio: Places the phone call to the user
+
+  Twilio->>API: GET/POST /outbound-call-twiml
+  API-->>Twilio: TwiML Connect Stream url
+
+  Twilio->>WS: WebSocket CONNECT
+  WS-->>Twilio: 101 Switching Protocols
+
+  Twilio->>WS: event start with streamSid and callSid
+  WS->>EL: conversation.start_session(audio_interface)
+
+  loop Realtime audio (caller to agent)
+    Twilio->>WS: event media with base64 payload
+    WS->>WS: decode and resample audio
+    WS->>EL: input_callback(PCM16 16k)
+    EL-->>WS: agent computes reply
+  end
+
+  loop Realtime audio (agent to caller)
+    EL-->>WS: output(PCM16 16k)
+    WS->>WS: base64 encode
+    WS-->>Twilio: event media with payload
+    Note right of Twilio: Plays audio to the caller
+  end
+
+  Twilio->>WS: event stop
+  WS->>EL: end_session and cleanup
+  WS-->>Twilio: socket closes
+```
 
 ## Conventions
 
