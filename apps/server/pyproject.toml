@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "time-traveler"
+version = "0.1.0"
+description = ""
+authors = ["dan1dr <dannieyo@gmail.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+elevenlabs = "^2.15.0"
+python-dotenv = "^1.1.1"
+ffmpeg = "^1.4"
+locust = "^2.40.4"
+fastapi = "^0.116.2"
+uvicorn = "^0.35.0"
+twilio = "^9.8.0"
+python-multipart = "^0.0.20"
+starlette = "^0.48.0"
+
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.30.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

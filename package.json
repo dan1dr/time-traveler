@@ -1,0 +1,20 @@
+{
+  "name": "time-traveler",
+  "version": "1.0.0",
+  "description": "Demo showcase for a time-traveler agent using Elevenlabs model who would call you and initiate an interesting conversation.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dan1dr/time-traveler.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dan1dr/time-traveler/issues"
+  },
+  "homepage": "https://github.com/dan1dr/time-traveler#readme"
+}
