@@ -92,6 +92,7 @@ async def outbound_call_twiml(
 
     return HTMLResponse(content=str(response), media_type="application/xml")
 
+@app.websocket("/outbound-media-stream")
 async def handle_outbound_media_stream(websocket: WebSocket):
     await websocket.accept()
     print("Outbound WebSocket connection opened")
