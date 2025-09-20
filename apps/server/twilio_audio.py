@@ -2,7 +2,6 @@ import asyncio
 import base64
 import json
 from fastapi import WebSocket
-# from elevenlabs.conversational_ai.audio_interface import AudioInterface
 from elevenlabs.conversational_ai.conversation import AudioInterface
 from starlette.websockets import WebSocketDisconnect, WebSocketState
 import audioop 
