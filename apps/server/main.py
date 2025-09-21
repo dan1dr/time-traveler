@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import traceback
 import uvicorn
@@ -16,6 +17,13 @@ from urllib.parse import quote
 from pydantic import BaseModel
 from era_config import get_era_session_variables
 
+# Add packages directory to Python path
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "packages", "shared-py"))
+
+# Import voice and agent managers
+from voice_manager import VoiceManager
+from agent_manager import AgentManager
+
 load_dotenv()
 
 DEBUG_LOGS = os.getenv("DEBUG_LOGS", "false").lower() == "true"
@@ -32,6 +40,13 @@ if not ELEVENLABS_API_KEY or not ELEVENLABS_AGENT_ID:
     raise ValueError("Missing required ElevenLabs environment variables")
 
 app = FastAPI(title="Twilio-ElevenLabs Integration Server")
+
+# Initialize voice and agent managers globally
+voice_manager = VoiceManager()
+agent_manager = AgentManager()
+
+print(f"🎤 Voice Manager initialized with {voice_manager.get_voice_statistics()}")
+print(f"🤖 Agent Manager initialized with {agent_manager.get_agent_statistics()}")
 
 # Pydantic models for request bodies
 class OutboundCallRequest(BaseModel):
@@ -167,36 +182,66 @@ async def handle_outbound_media_stream(websocket: WebSocket):
 
                 # Initialize the conversation
                 try:
-                    # Check if we have era-specific agent IDs (environment variables)
-                    era_agent_id = os.getenv(f"ELEVENLABS_AGENT_ID_{session_vars['era_name'].upper()}")
-                    agent_id_to_use = era_agent_id if era_agent_id else ELEVENLABS_AGENT_ID
+                    # Get randomized voice for the language (era-agnostic randomization)
+                    # Voice characteristics (speed, stability, style) come from era_config.py
+                    selected_voice = voice_manager.get_random_voice_for_language(lang)
+                    voice_id = selected_voice['id'] if selected_voice else None
                     
-                    print(f"Using agent ID: {agent_id_to_use} (era-specific: {bool(era_agent_id)})")
+                    # Fallback to environment variable voice pools if JSON selection fails
+                    if not voice_id:
+                        voice_id = voice_manager.get_voice_id_from_env(lang)
+                        if voice_id:
+                            print(f"🔄 Using fallback voice from env: {voice_id[:8]}...")
+                    
+                    # Get randomized agent (era-agnostic)
+                    selected_agent = agent_manager.get_random_agent()
+                    agent_id_to_use = agent_manager.get_agent_id(selected_agent) if selected_agent else ELEVENLABS_AGENT_ID
+                    
+                    # Fallback to base agent if random selection fails
+                    if not agent_id_to_use:
+                        agent_id_to_use = ELEVENLABS_AGENT_ID
+                        print(f"🔄 Using fallback base agent: {agent_id_to_use[:8]}...")
+                    
+                    print(f"🎯 Using agent ID: {agent_id_to_use[:8]}... ({selected_agent['name'] if selected_agent else 'fallback'})")
+                    print(f"🎤 Using voice ID: {voice_id[:8] if voice_id else 'default'}... ({selected_voice['name'] if selected_voice else 'agent default'})")
                     
                     # Create dynamic variables for the agent's system prompt (exclude voice_settings)
                     dynamic_vars = {k: v for k, v in session_vars.items() if k != 'voice_settings'}
                     
-                    # Create conversation config override for voice settings
-                    voice_settings = session_vars['voice_settings']
+                    # Create conversation config override combining:
+                    # 1. Era-specific voice settings (from era_config.py)
+                    # 2. Randomized voice_id (from voice_manager)
+                    voice_settings = session_vars['voice_settings'].copy()
                     
-                    # Use the official ElevenLabs documentation structure
+                    # Use the official ElevenLabs documentation structure exactly
                     conversation_override = {
-                        "tts": {
-                            # Based on official docs: individual parameters at tts level
-                            "stability": voice_settings.get("stability"),
-                            "similarity_boost": voice_settings.get("similarity_boost"), 
-                            "style": voice_settings.get("style"),
-                            "speed": voice_settings.get("speed")  # Fixed: speed not voice_speed
-                        }
+                        "tts": {}
                     }
+                    
+                    # Add voice_id if available (official docs show this is supported)
+                    if voice_id:
+                        conversation_override["tts"]["voice_id"] = voice_id
+                        print(f"🎤 Voice ID override set: {voice_id}")
+                    
+                    # Add other voice settings - testing which ones cause issues
+                    # Note: These might need to be enabled in agent security settings
+                    voice_settings_to_test = {
+                        "stability": voice_settings.get("stability"),
+                        "similarity_boost": voice_settings.get("similarity_boost"), 
+                        "speed": voice_settings.get("speed")
+                        # Excluding 'style' as it wasn't in the screenshot
+                    }
+                    
+                    # Add voice settings to override
+                    conversation_override["tts"].update(voice_settings_to_test)
                     
                     print(f"🔍 Dynamic variables: {dynamic_vars}")
                     print(f"🔧 Voice settings from era config: {voice_settings}")
                     print(f"📡 Conversation override structure: {json.dumps(conversation_override, indent=2)}")
+                    print(f"⚠️  Important: Voice overrides must be enabled in ElevenLabs agent security settings")
                     
                     # Try with both dynamic variables and conversation overrides
                     try:
-                        # Create conversation configuration with dynamic variables and overrides
                         config = ConversationInitiationData(
                             dynamic_variables=dynamic_vars,
                             conversation_config_override=conversation_override
@@ -208,7 +253,7 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                             config=config,
                             requires_auth=True,
                             audio_interface=audio_interface,
-                            callback_agent_response=lambda text: print(f"Agent ({session_vars['era_name']}): {text}"),
+                            callback_agent_response=lambda text: print(f"Agent ({session_vars['era_name']}/{selected_agent['name'] if selected_agent else 'default'}): {text}"),
                             callback_user_transcript=lambda text: print(f"User: {text}"),
                         )
                         print("✅ Created conversation with dynamic variables and voice overrides")
@@ -229,7 +274,7 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                                 config=config_fallback,
                                 requires_auth=True,
                                 audio_interface=audio_interface,
-                                callback_agent_response=lambda text: print(f"Agent (no voice override): {text}"),
+                                callback_agent_response=lambda text: print(f"Agent (no voice override/{selected_agent['name'] if selected_agent else 'default'}): {text}"),
                                 callback_user_transcript=lambda text: print(f"User: {text}"),
                             )
                             print("✅ Created conversation with dynamic variables only (no voice overrides)")
@@ -243,7 +288,7 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                                 agent_id=agent_id_to_use,
                                 requires_auth=True,
                                 audio_interface=audio_interface,
-                                callback_agent_response=lambda text: print(f"Agent (basic): {text}"),
+                                callback_agent_response=lambda text: print(f"Agent (basic/{selected_agent['name'] if selected_agent else 'default'}): {text}"),
                                 callback_user_transcript=lambda text: print(f"User: {text}"),
                             )
 

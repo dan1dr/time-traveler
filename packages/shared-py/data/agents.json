@@ -1,0 +1,29 @@
+{
+  "agents": [
+    {
+      "name": "Time Traveler - Standard",
+      "description": "Classic curious time traveler, balanced personality",
+      "env_var": "ELEVENLABS_AGENT_ID"
+    },
+    {
+      "name": "Time Traveler - Scholar", 
+      "description": "Intellectual, analytical time traveler focused on knowledge",
+      "env_var": "ELEVENLABS_AGENT_ID_ALT_1"
+    },
+    {
+      "name": "Time Traveler - Adventurer",
+      "description": "Bold, story-driven time traveler with exciting tales",
+      "env_var": "ELEVENLABS_AGENT_ID_ALT_2"
+    },
+    {
+      "name": "Time Traveler - Mystic", 
+      "description": "Poetic, cosmic time traveler with spiritual insights",
+      "env_var": "ELEVENLABS_AGENT_ID_ALT_3"
+    },
+    {
+      "name": "Time Traveler - Artisan",
+      "description": "Creative, craft-focused time traveler from artistic periods", 
+      "env_var": "ELEVENLABS_AGENT_ID_ALT_4"
+    }
+  ]
+}

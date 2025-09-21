@@ -16,39 +16,49 @@ This project delivers an **outbound voice experience**: a visitor submits a form
 
 ## High-Level Call Flow
 
+# right now, the chart looks like this
+
+---
 ```mermaid
 sequenceDiagram
   autonumber
-  participant U as User (Web)
-  participant V as Vercel (UI)
-  participant B as FastAPI (Server)
-  participant T as Twilio Voice
-  participant W as Twilio WS Stream
-  participant E as ElevenLabs Agent
+  participant UI as Your UI (form/button)
+  participant API as FastAPI Server
+  participant Twilio as Twilio Voice (PSTN)
+  participant WS as /outbound-media-stream (WebSocket)
+  participant EL as ElevenLabs Conversation
 
-  U->>V: Submit {phone, lang, year, voice?}
-  V->>B: POST /outbound-call
-  B->>T: Calls.create(from, to, url=/outbound-call-twiml?year&lang&voice)
-  T-->>B: 201 (Call SID)
-  T->>B: GET/POST /outbound-call-twiml (on answer)
-  B-->>T: TwiML <Connect><Stream url="wss://.../outbound-media-stream" params>
-  T->>W: Open WSS (bidirectional)
-  W->>B: event=start {streamSid, params}
-  B->>E: Conversation.start_session({year, language, voice_id, era_hint})
-  T->>B: event=media (μ-law 8k frames)
-  B->>E: feed_input_audio(PCM16 16k)  (convert if needed)
-  E-->>B: output(audio PCM16 16k)
-  B-->>T: event=media (base64 audio)
-  U-->>T: Speaks / barge-in
-  T->>B: more media frames
-  B->>E: interrupt(); feed_input_audio(...)
-  E-->>B: new response turns
-  B-->>T: event=media (audio back)
-  T-->>U: Plays agent replies
-  U-->>T: Hangs up
-  T->>B: event=stop / status
-  B->>E: end_session(); wait_for_session_end()
-````
+  UI->>API: POST /outbound-call (to=+34...)
+  API->>Twilio: REST calls.create(from, to, url=/outbound-call-twiml)
+  Note right of Twilio: Places the phone call to the user
+
+  Twilio->>API: GET/POST /outbound-call-twiml
+  API-->>Twilio: TwiML Connect Stream url
+
+  Twilio->>WS: WebSocket CONNECT
+  WS-->>Twilio: 101 Switching Protocols
+
+  Twilio->>WS: event start with streamSid and callSid
+  WS->>EL: conversation.start_session(audio_interface)
+
+  loop Realtime audio (caller to agent)
+    Twilio->>WS: event media with base64 payload
+    WS->>WS: decode and resample audio
+    WS->>EL: input_callback(PCM16 16k)
+    EL-->>WS: agent computes reply
+  end
+
+  loop Realtime audio (agent to caller)
+    EL-->>WS: output(PCM16 16k)
+    WS->>WS: base64 encode
+    WS-->>Twilio: event media with payload
+    Note right of Twilio: Plays audio to the caller
+  end
+
+  Twilio->>WS: event stop
+  WS->>EL: end_session and cleanup
+  WS-->>Twilio: socket closes
+```
 
 ---
 
@@ -58,20 +68,33 @@ sequenceDiagram
 time-traveler/
 ├─ apps/
 │  ├─ web/                      # Next.js (Vercel) UI
-│  └─ server/                   # FastAPI backend (Poetry)
+│  └─ server/                   # FastAPI backend with era config
+│     ├─ main.py               # FastAPI app with /outbound-call endpoints
+│     ├─ twilio_audio.py       # Twilio audio bridge & WebSocket handler
+│     ├─ era_config.py         # Era definitions and voice settings
+│     └─ pyproject.toml        # Server dependencies (Poetry)
 ├─ packages/
-│  ├─ shared-content/           # JSON: eras & voices (single source of truth)
-│  ├─ shared-py/                # Python adapter to load that JSON
-│  └─ shared-ts/                # TypeScript adapter to load that JSON
+│  └─ shared-py/               # Python shared modules
+│     ├─ data/                 # JSON data files
+│     │  ├─ voices.json        # Voice IDs by language
+│     │  └─ agents.json        # Agent personalities
+│     ├─ voice_manager.py      # Voice randomization logic
+│     └─ agent_manager.py      # Agent randomization logic
+├─ tests/                      # Unit tests (pytest)
+│  ├─ test_voice_manager.py    # Voice manager tests
+│  ├─ test_agent_manager.py    # Agent manager tests
+│  ├─ test_era_config.py       # Era configuration tests
+│  └─ conftest.py              # Test fixtures and setup
 ├─ infra/
-│  ├─ vercel/                   # Vercel config/notes (UI)
-│  ├─ docker/                   # Dockerfiles/compose (optional)
-│  └─ twilio/                   # Number setup, Media Streams notes
-├─ scripts/                     # Dev helpers (no app logic)
-├─ .env.example                 # Documentation of all env vars across apps
+│  ├─ vercel/                  # Vercel config/notes (UI)
+│  ├─ docker/                  # Dockerfiles/compose (optional)
+│  └─ twilio/                  # Number setup, Media Streams notes
+├─ scripts/                    # Dev helpers (no app logic)
+├─ pyproject.toml              # Root Poetry project for testing
+├─ poetry.lock                 # Root dependency lock file
+├─ .env.example                # Documentation of all env vars across apps
 ├─ README.md
-├─ package.json                 # JS workspaces root (web + shared-ts)
-└─ (per-app) pyproject.toml     # Poetry files inside Python subprojects
+└─ package.json                # JS workspaces root (web + shared-ts)
 ```
 
 ### Folder Purposes (concise)
@@ -83,23 +106,29 @@ time-traveler/
   * `src/components/` — `YearSlider`, `PhoneInput`, `VoiceSelect`.
   * **Env:** `apps/web/.env.local` with only `NEXT_PUBLIC_*` vars.
 
-* **apps/server/** – Backend (FastAPI).
+* **apps/server/** – FastAPI backend with era configuration.
 
-  * `app/main.py` — routes: `POST /outbound-call`, `GET|POST /outbound-call-twiml`, `WS /outbound-media-stream`.
-  * `app/twilio_bridge.py` — μ-law 8k ↔ PCM16 16k bridge + barge-in handling.
-  * `app/eleven_agent.py` — ElevenLabs Conversation bootstrap; session vars (year/lang/voice, era hint).
-  * `app/era_hints.py` — map year → era "vibe" strings (ES/EN).
-  * `app/settings.py` — env loader (pydantic-settings).
+  * `main.py` — routes: `POST /outbound-call`, `GET|POST /outbound-call-twiml`, `WS /outbound-media-stream`.
+  * `twilio_audio.py` — μ-law 8k ↔ PCM16 16k bridge + WebSocket handler + ElevenLabs integration.
+  * `era_config.py` — map year → era configurations with voice settings and expressions.
+  * `pyproject.toml` — Poetry dependencies for server.
   * **Env:** `apps/server/.env` (secrets, git-ignored).
 
-* **packages/shared-content/** — JSON only (source of truth).
+* **packages/shared-py/** — Python shared modules for voice/agent management.
 
-  * `eras/eras.es.json`, `eras/eras.en.json` — motifs/expressions.
-  * `voices/voices.es.json`, `voices/voices.en.json` — curated voice IDs + labels.
+  * `data/voices.json` — curated voice IDs by language (ES/EN).
+  * `data/agents.json` — agent personalities for randomization.
+  * `voice_manager.py` — voice randomization logic.
+  * `agent_manager.py` — agent selection and environment variable handling.
 
-* **packages/shared-py/** — Python helpers to consume JSON from server.
+* **tests/** — Unit tests for all core logic.
 
-* **packages/shared-ts/** — TS helpers to consume JSON from web.
+  * `test_voice_manager.py` — voice randomization and language-based selection tests.
+  * `test_agent_manager.py` — agent selection and environment variable tests.
+  * `test_era_config.py` — era mapping and configuration validation tests.
+  * `conftest.py` — pytest fixtures and shared test setup.
+
+* **packages/shared-ts/** — TS helpers to consume JSON from web (future).
 
 * **infra/** — Deploy notes/configs (Vercel, Docker, Twilio).
 
@@ -184,7 +213,7 @@ NEXT_PUBLIC_BACKEND_URL=https://your-public-server
 # Backend
 cd apps/server
 poetry install
-poetry run uvicorn app.main:app --reload --port 8000
+poetry run uvicorn main:app --reload --port 8000
 ngrok http 8000   # copy HTTPS URL into apps/server/.env as PUBLIC_BASE_URL
 
 # Test a call (no UI yet)
@@ -192,60 +221,24 @@ curl -X POST "$PUBLIC_BASE_URL/outbound-call" \
   -H "Content-Type: application/json" \
   -d '{"to":"+34XXXXXXXXX","year":1580,"lang":"es"}'
 
+# Run tests from root
+cd ../../  # back to root
+poetry install  # install test dependencies at root level
+poetry run pytest tests/ -v
+
 # Frontend (optional later)
-cd ../../apps/web
+cd apps/web
 pnpm i
 pnpm dev
 # set NEXT_PUBLIC_BACKEND_URL in apps/web/.env.local to your server URL
 ```
 
-# right now, the chart looks like this
-
----
-```mermaid
-sequenceDiagram
-  autonumber
-  participant UI as Your UI (form/button)
-  participant API as FastAPI Server
-  participant Twilio as Twilio Voice (PSTN)
-  participant WS as /outbound-media-stream (WebSocket)
-  participant EL as ElevenLabs Conversation
-
-  UI->>API: POST /outbound-call (to=+34...)
-  API->>Twilio: REST calls.create(from, to, url=/outbound-call-twiml)
-  Note right of Twilio: Places the phone call to the user
-
-  Twilio->>API: GET/POST /outbound-call-twiml
-  API-->>Twilio: TwiML Connect Stream url
-
-  Twilio->>WS: WebSocket CONNECT
-  WS-->>Twilio: 101 Switching Protocols
-
-  Twilio->>WS: event start with streamSid and callSid
-  WS->>EL: conversation.start_session(audio_interface)
-
-  loop Realtime audio (caller to agent)
-    Twilio->>WS: event media with base64 payload
-    WS->>WS: decode and resample audio
-    WS->>EL: input_callback(PCM16 16k)
-    EL-->>WS: agent computes reply
-  end
-
-  loop Realtime audio (agent to caller)
-    EL-->>WS: output(PCM16 16k)
-    WS->>WS: base64 encode
-    WS-->>Twilio: event media with payload
-    Note right of Twilio: Plays audio to the caller
-  end
-
-  Twilio->>WS: event stop
-  WS->>EL: end_session and cleanup
-  WS-->>Twilio: socket closes
-```
 
 ## Conventions
 
-* **Single source of truth** for eras/voices in `packages/shared-content/`.
+* **Era configuration** in `apps/server/era_config.py` as Python classes for type safety.
+* **Voice/agent data** in `packages/shared-py/data/` as JSON for easy management.
+* **Testing** from root using Poetry with `pytest` for comprehensive test coverage.
 * **Frontend never stores secrets** (only `NEXT_PUBLIC_*` vars).
 * Keep agent turns short to reduce latency; verify **barge-in** behavior.
 * Supabase/DB not required for MVP; add later for rate-limits or content editing.
