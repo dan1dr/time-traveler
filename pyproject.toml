@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "time-traveler"
+version = "0.1.0"
+description = "Time Traveler Voice Agent System"
+authors = ["Your Name <your.email@example.com>"]
+readme = "README.md"
+packages = [
+    {include = "packages/shared-py", from = "."},
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pytest = "^8.4.2"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.2"
+pytest-cov = "^7.0.0"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.4.2"
+pytest-cov = "^7.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [
+    "packages/shared-py",
+    "apps/server"
+]
