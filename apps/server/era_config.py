@@ -39,10 +39,10 @@ ERA_CONFIGS = {
             ]
         },
         voice_settings={
-            "stability": 0.8,
+            "stability": 0.3,
             "similarity_boost": 0.7,
             "style": 0.6,
-            "speed": 0.9  # Ancient wisdom, minimum acceptable speed
+            "speed": 1.1  # Ancient wisdom, minimum acceptable speed
         },
         context_hint="ancient civilizations, philosophical wisdom, reverence for gods and nature",
         time_period="Ancient Times"
