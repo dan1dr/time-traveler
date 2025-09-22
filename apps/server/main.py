@@ -211,6 +211,11 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                     # Create dynamic variables for the agent's system prompt (exclude voice_settings)
                     dynamic_vars = {k: v for k, v in session_vars.items() if k != 'voice_settings'}
                     
+                    # Add voice metadata for character consistency
+                    if selected_voice:
+                        dynamic_vars["voice_gender"] = selected_voice.get('gender', 'unknown')
+                        dynamic_vars["voice_age_range"] = selected_voice.get('age_range', 'unknown')
+                    
                     # Create conversation config override combining:
                     # 1. Era-specific voice settings (from era_config.py)
                     # 2. Randomized voice_id (from voice_manager)

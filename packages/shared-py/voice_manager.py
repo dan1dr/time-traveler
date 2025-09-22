@@ -66,7 +66,10 @@ class VoiceManager:
             return None
         
         selected_voice = random.choice(voices)
-        print(f"🎤 Selected voice: {selected_voice['name']} (ID: {selected_voice['id'][:8]}...) for {language}")
+        # Enhanced logging with metadata
+        gender = selected_voice.get('gender', 'unknown')
+        age_range = selected_voice.get('age_range', 'unknown')
+        print(f"🎤 Selected voice: {selected_voice['name']} (ID: {selected_voice['id'][:8]}...) - {gender} {age_range} for {language}")
         return selected_voice
     
     def get_voice_id_from_env(self, language: str) -> Optional[str]:
