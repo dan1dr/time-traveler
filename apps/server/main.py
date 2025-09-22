@@ -23,6 +23,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "packages", 
 # Import voice and agent managers
 from voice_manager import VoiceManager
 from agent_manager import AgentManager
+from first_message_manager import FirstMessageManager
 
 load_dotenv()
 
@@ -44,9 +45,11 @@ app = FastAPI(title="Twilio-ElevenLabs Integration Server")
 # Initialize voice and agent managers globally
 voice_manager = VoiceManager()
 agent_manager = AgentManager()
+first_message_manager = FirstMessageManager()
 
 print(f"🎤 Voice Manager initialized with {voice_manager.get_voice_statistics()}")
 print(f"🤖 Agent Manager initialized with {agent_manager.get_agent_statistics()}")
+print(f"💬 First Message Manager initialized with {first_message_manager.get_statistics()['total_eras']} eras")
 
 # Pydantic models for request bodies
 class OutboundCallRequest(BaseModel):
@@ -213,10 +216,22 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                     # 2. Randomized voice_id (from voice_manager)
                     voice_settings = session_vars['voice_settings'].copy()
                     
+                    # Get random first message for this era and language
+                    first_message = first_message_manager.get_random_first_message(
+                        era_name=session_vars['era_name'], 
+                        language=lang
+                    )
+                    
                     # Use the official ElevenLabs documentation structure exactly
                     conversation_override = {
+                        "agent": {},
                         "tts": {}
                     }
+                    
+                    # Add first message override if available
+                    if first_message:
+                        conversation_override["agent"]["first_message"] = first_message
+                        print(f"💬 First message override set: {first_message[:50]}...")
                     
                     # Add voice_id if available (official docs show this is supported)
                     if voice_id:
