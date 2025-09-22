@@ -76,10 +76,12 @@ time-traveler/
 ├─ packages/
 │  └─ shared-py/               # Python shared modules
 │     ├─ data/                 # JSON data files
-│     │  ├─ voices.json        # Voice IDs by language
-│     │  └─ agents.json        # Agent personalities
+│     │  ├─ voices.json        # Voice IDs with gender/age metadata
+│     │  ├─ agents.json        # Agent personalities
+│     │  └─ first_messages.json # Era-specific greetings
 │     ├─ voice_manager.py      # Voice randomization logic
-│     └─ agent_manager.py      # Agent randomization logic
+│     ├─ agent_manager.py      # Agent randomization logic
+│     └─ first_message_manager.py # First message selection
 ├─ tests/                      # Unit tests (pytest)
 │  ├─ test_voice_manager.py    # Voice manager tests
 │  ├─ test_agent_manager.py    # Agent manager tests
@@ -116,10 +118,12 @@ time-traveler/
 
 * **packages/shared-py/** — Python shared modules for voice/agent management.
 
-  * `data/voices.json` — curated voice IDs by language (ES/EN).
+  * `data/voices.json` — curated voice IDs by language with gender/age metadata.
   * `data/agents.json` — agent personalities for randomization.
-  * `voice_manager.py` — voice randomization logic.
+  * `data/first_messages.json` — era-specific greeting messages by language.
+  * `voice_manager.py` — voice randomization logic with metadata support.
   * `agent_manager.py` — agent selection and environment variable handling.
+  * `first_message_manager.py` — era-appropriate first message selection.
 
 * **tests/** — Unit tests for all core logic.
 
@@ -166,9 +170,10 @@ time-traveler/
 
 **Agent (ElevenLabs)**
 
-* One Agent; barge-in enabled; short responses (≤3 sentences).
-* System prompt (concept): modern ES/EN, **2–4 era expressions**, sensory motifs; avoid archaic orthography; ask one curiosity question; avoid specific present-day claims (celebrities/politics/medical/finance).
-* Session vars per call: `{year, language, voice_id, era_hint}`.
+* Randomized Agent; barge-in enabled; short responses (≤3 sentences).
+* System prompt receives dynamic variables: era context, expressions, voice metadata for character consistency.
+* Features: Era-specific first messages, voice-character matching, conversation overrides.
+* Session vars per call: `{year, language, voice_id, voice_gender, voice_age_range, era_context, expressions, first_message}`.
 
 **Security**
 
