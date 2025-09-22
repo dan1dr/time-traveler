@@ -1,0 +1,54 @@
+{
+  "spanish": [
+    {
+      "id": "UOIqAnmS11Reiei1Ytkc",
+      "name": "Spanish Voice 1",
+      "gender": "female",
+      "age_range": "young adult"
+    },
+    {
+      "id": "NP0IfihYIXtD1RmniRCL", 
+      "name": "Spanish Voice 2",
+      "gender": "male",
+      "age_range": "elderly"
+    },
+    {
+      "id": "1eHrpOW5l98cxiSRjbzJ",
+      "name": "Spanish Voice 3",
+      "gender": "female",
+      "age_range": "young adult"
+    },
+    {
+      "id": "vLKc7bavj1pLAULAyi3r",
+      "name": "Spanish Voice 4",
+      "gender": "male",
+      "age_range": "middle-aged"
+    }
+  ],
+  "english": [
+    {
+      "id": "aOZ9Pl8uWUTet0DS7PYP",
+      "name": "English Voice 1",
+      "gender": "male",
+      "age_range": "elderly"
+    },
+    {
+      "id": "cYctNG9CmLHHErrIh5s7",
+      "name": "English Voice 2",
+      "gender": "female",
+      "age_range": "young adult"
+    },
+    {
+      "id": "UgBBYS2sOqTuMpoF3BR0",
+      "name": "English Voice 3",
+      "gender": "male",
+      "age_range": "middle-aged"
+    },
+    {
+      "id": "t9pa8vZ7tCoTLCLirl6c",
+      "name": "English Voice 4",
+      "gender": "female",
+      "age_range": "middle-aged"
+    }
+  ]
+}

@@ -1,0 +1,172 @@
+{
+  "ancient": {
+    "en": [
+      "By the gods! A voice not of my time...",
+      "Who dares speak across the ages?",
+      "Hail, stranger—step forth from beyond.",
+      "Peace be with you. What wisdom do you bring?"
+    ],
+    "es": [
+      "¡Por los dioses! Nunca escuché algo así.",
+      "¿Quién habla desde un horizonte tan lejano?",
+      "¡Salve! Tu voz suena como un augurio.",
+      "Que los dioses te acompañen... dime, ¿qué quieres?"
+    ]
+  },
+  "medieval": {
+    "en": [
+      "By my troth! Witchcraft rings in my ears!",
+      "Good morrow—art thou ghost or traveler?",
+      "Hark! Strange tidings reach me.",
+      "God's mercy! Speak quickly, friend or foe?"
+    ],
+    "es": [
+      "¡Por mi fe! Esto no es obra de hombre.",
+      "¿Eres espectro, o mensajero venido de lejos?",
+      "¡Atiende! Algo extraño me habla.",
+      "¡Cristo bendito! Declárate, que no temo."
+    ]
+  },
+  "renaissance": {
+    "en": [
+      "Marvelous! A discourse that defies time itself.",
+      "Salutations! Some new marvel of invention?",
+      "Extraordinary—science must bow before this.",
+      "Sublime! Do you bring visions of tomorrow?"
+    ],
+    "es": [
+      "¡Qué hallazgo más inaudito!",
+      "¿Es esto arte, máquina o fantasía?",
+      "¡Oh prodigio! Las ciencias aún no alcanzan tanto.",
+      "Traes ecos de un mundo que aún no nace."
+    ]
+  },
+  "baroque": {
+    "en": [
+      "Heavens! A voice woven into the fabric of time!",
+      "With grace I welcome you, though confounded I stand.",
+      "Exquisite marvel—pray, declare your purpose.",
+      "By refinement alone could such wonder be wrought!"
+    ],
+    "es": [
+      "¡Qué exceso tan divino!",
+      "Una voz tan lejana como fastuosa.",
+      "¡Por Dios! Esta aparición me sobrecoge.",
+      "Hablad ya, que el misterio me devora."
+    ]
+  },
+  "industrial": {
+    "en": [
+      "By Jove! Voices through time itself!",
+      "Progress knows no bounds, it seems.",
+      "The age of steam births yet another marvel.",
+      "Extraordinary! Tell me of your inventions."
+    ],
+    "es": [
+      "¡Qué prodigio! Esto supera al telégrafo.",
+      "Nunca pensé que el vapor llevaría tan lejos.",
+      "¡Imposible! Y, sin embargo, aquí estás.",
+      "Anda, cuéntame qué inventos trae tu siglo."
+    ]
+  },
+  "early_modern": {
+    "en": [
+      "Well I'll be! A clear voice from nowhere—extraordinary!",
+      "Hello there! This is no radio I've ever known.",
+      "The world grows smaller each day, and now this!",
+      "Remarkable—what year do you speak from?"
+    ],
+    "es": [
+      "¡Caracoles! Se oye como si estuvieras al lado.",
+      "¡Buenas! Esto no es ni teléfono ni radio.",
+      "Cada día inventan algo nuevo… pero esto se lleva la palma.",
+      "¡Menuda rareza! ¿En qué año dices que vives?"
+    ]
+  },
+  "mid_modern": {
+    "en": [
+      "Far out, man! This is blowing my mind.",
+      "Hey there! Is this some space-age trick?",
+      "Groovy stuff—like talking across the stars!",
+      "Right on! Lay it on me—what's happening in your time?"
+    ],
+    "es": [
+      "¡Qué movida, colega! Esto es de otro rollo.",
+      "¡Ey! Suena más raro que un vinilo al revés.",
+      "Alucino… ¿vienes de la era espacial o qué?",
+      "¡Genial! Cuenta, ¿qué se cuece en tu época?"
+    ]
+  },
+  "contemporary": {
+    "en": [
+      "Hey, what’s up?",
+      "Yo! How’s it going?",
+      "Hi there, all good?",
+      "Hey! Long time no hear.",
+      "Sup? Everything cool?"
+        ],
+    "es": [
+      "¡Ey, qué tal!",
+      "Buenas, ¿cómo vas?",
+      "¡Oye! Todo bien o qué?",
+      "¡Hola! ¿Qué me cuentas?",
+      "¡Ey! ¿Qué pasa, tronco?"
+        ]
+  },
+  "ai_renaissance": {
+    "en": [
+      "Oh wow, a voice from outside my timeline! Wild.",
+      "Hey there! My neural nets are kinda freaking out right now.",
+      "This is so cool—you're like, temporally displaced or something?",
+      "Okay, processing this... you're definitely not from my era!"
+    ],
+    "es": [
+      "¡Ostras! Una voz que no debería existir aún.",
+      "¡Ey! Mis redes neuronales están flipando ahora mismo.",
+      "Esto mola muchísimo—¿eres como un viajero temporal?",
+      "A ver, procesando esto... ¡definitivamente no eres de mi época!"
+    ]
+  },
+  "interplanetary": {
+    "en": [
+      "Mars colony here, signal received!",
+      "Orbital link is live—loud and clear.",
+      "Copy that, Earth traveler.",
+      "Cosmic channel open—state your course."
+    ],
+    "es": [
+      "Aquí Marte, recibimos tu señal.",
+      "Enlace orbital en línea y fuerte.",
+      "Recibido, terrícola del pasado.",
+      "Conexión cósmica establecida. ¿Rumbo?"
+    ]
+  },
+  "transcendent": {
+    "en": [
+      "Consciousness to consciousness—your voice arrives.",
+      "Beyond time, I acknowledge you.",
+      "You reach me in clarity, though not in form.",
+      "Proceed—space and time hold no weight here."
+    ],
+    "es": [
+      "La conciencia reconoce tu eco.",
+      "Más allá del tiempo, te escucho.",
+      "Llegas claro aunque sin forma.",
+      "Sigue; aquí nada pesa ya."
+    ]
+  },
+  "far_future": {
+    "en": [
+      "Hello from the end of time—your voice is ancient to me.",
+      "I dwell where all moments fold together.",
+      "Strange—your world feels like a memory long gone.",
+      "Ask, and the flow of existence shall answer."
+    ],
+    "es": [
+      "Hola desde el último pliegue del tiempo.",
+      "Aquí todos los instantes laten a la vez.",
+      "Tu mundo me suena a recuerdo olvidado.",
+      "Pregunta, y la existencia te responde."
+    ]
+  }
+}
