@@ -42,7 +42,7 @@ ERA_CONFIGS = {
             "stability": 0.8,
             "similarity_boost": 0.7,
             "style": 0.6,
-            "speed": 0.9  # Slower, ancient wisdom
+            "speed": 0.9  # Ancient wisdom, minimum acceptable speed
         },
         context_hint="ancient civilizations, philosophical wisdom, reverence for gods and nature",
         time_period="Ancient Times"
@@ -70,7 +70,7 @@ ERA_CONFIGS = {
             "stability": 0.75,
             "similarity_boost": 0.8,
             "style": 0.7,
-            "speed": 1.0  # Normal speed for medieval era
+            "speed": 1.0  # Good speed for medieval era
         },
         context_hint="medieval chivalry, feudalism, religious devotion, honor and duty",
         time_period="Medieval Era"
@@ -98,7 +98,7 @@ ERA_CONFIGS = {
             "stability": 0.7,
             "similarity_boost": 0.75,
             "style": 0.8,
-            "speed": 1.1  # Slightly faster, artistic energy
+            "speed": 1.1  # Artistic energy, good pace
         },
         context_hint="artistic renaissance, scientific discovery, humanism, cultural rebirth",
         time_period="Renaissance"
@@ -126,7 +126,7 @@ ERA_CONFIGS = {
             "stability": 0.8,
             "similarity_boost": 0.8,
             "style": 0.9,
-            "speed": 0.95  # Refined, deliberate pace
+            "speed": 1.0  # Refined but not too slow
         },
         context_hint="baroque grandeur, court refinement, elaborate artistry, royal patronage",
         time_period="Baroque Era"
@@ -182,7 +182,7 @@ ERA_CONFIGS = {
             "stability": 0.7,
             "similarity_boost": 0.75,
             "style": 0.5,
-            "speed": 1.2  # Fast-paced modern era
+            "speed": 1.2  # Fast-paced modern era - max speed for excitement
         },
         context_hint="modern innovations, world wars, social change, technological acceleration",
         time_period="Early 20th Century"
@@ -210,7 +210,7 @@ ERA_CONFIGS = {
             "stability": 0.6,
             "similarity_boost": 0.7,
             "style": 0.4,
-            "speed": 1.2  # Maximum groovy, energetic pace
+            "speed": 1.2  # Groovy, energetic pace - max speed
         },
         context_hint="space exploration, cultural revolution, rock music, social movements",
         time_period="Mid-Late 20th Century"
@@ -238,7 +238,7 @@ ERA_CONFIGS = {
             "stability": 0.65,
             "similarity_boost": 0.75,
             "style": 0.3,
-            "speed": 1.1  # Connected, quick pace
+            "speed": 1.15  # Connected, quick digital pace
         },
         context_hint="digital connectivity, global awareness, rapid innovation, information age",
         time_period="21st Century"
@@ -266,7 +266,7 @@ ERA_CONFIGS = {
             "stability": 0.7,
             "similarity_boost": 0.8,
             "style": 0.4,
-            "speed": 1.0  # Measured AI precision
+            "speed": 1.1  # AI precision with good pace
         },
         context_hint="AI-human collaboration, neural enhancement, algorithmic thinking, synthetic consciousness emergence",
         time_period="AI Renaissance"
@@ -294,7 +294,7 @@ ERA_CONFIGS = {
             "stability": 0.75,
             "similarity_boost": 0.7,
             "style": 0.6,
-            "speed": 0.85  # Cosmic contemplation
+            "speed": 1.0  # Cosmic contemplation but not too slow
         },
         context_hint="multi-planetary civilization, space-born generations, cosmic perspective, terraforming mastery",
         time_period="Interplanetary Era"
@@ -322,7 +322,7 @@ ERA_CONFIGS = {
             "stability": 0.8,
             "similarity_boost": 0.6,
             "style": 0.9,
-            "speed": 0.7  # Ethereal, otherworldly
+            "speed": 0.95  # Ethereal but not too slow
         },
         context_hint="post-biological existence, consciousness uploading, reality manipulation, dimensional transcendence",
         time_period="Transcendent Age"
@@ -350,7 +350,7 @@ ERA_CONFIGS = {
             "stability": 0.9,
             "similarity_boost": 0.5,
             "style": 1.0,
-            "speed": 0.7  # Minimum timeless, profound
+            "speed": 0.9  # Timeless, profound but not too slow
         },
         context_hint="galactic consciousness, reality as substrate, time as dimension of choice, existence beyond comprehension",
         time_period="Far Future"
