@@ -37,7 +37,7 @@ TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
 
 # Check for required environment variables
-if not ELEVENLABS_API_KEY or not ELEVENLABS_AGENT_ID:
+if not ELEVENLABS_API_KEY:
     raise ValueError("Missing required ElevenLabs environment variables")
 
 app = FastAPI(title="Twilio-ElevenLabs Integration Server")
@@ -174,14 +174,12 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                 audio_interface.stream_id = stream_sid
 
                 print(f"Outbound call started - StreamSid: {stream_sid}, CallSid: {call_sid}")
-                print(f"📋 Custom parameters received: {custom_parameters}")
                 print(f"Call parameters - Language: {lang}, Year: {year}")
 
                 # Get era-specific configuration
                 session_vars = get_era_session_variables(year, lang)
                 
                 print(f"Era configuration: {session_vars['era_name']} ({session_vars['time_period']})")
-                print(f"Era expressions: {session_vars['expression_1']}, {session_vars['expression_2']}, {session_vars['expression_3']}")
 
                 # Initialize the conversation
                 try:
@@ -198,7 +196,7 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                     
                     # Get randomized agent (era-agnostic)
                     selected_agent = agent_manager.get_random_agent()
-                    agent_id_to_use = agent_manager.get_agent_id(selected_agent) if selected_agent else ELEVENLABS_AGENT_ID
+                    agent_id_to_use = agent_manager.get_agent_id(selected_agent) if selected_agent else ELEVENLABS_AGENT_ID_1
                     
                     # Fallback to base agent if random selection fails
                     if not agent_id_to_use:
@@ -236,7 +234,7 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                     # Add first message override if available
                     if first_message:
                         conversation_override["agent"]["first_message"] = first_message
-                        print(f"💬 First message override set: {first_message[:50]}...")
+                        #print(f"💬 First message override set: {first_message[:50]}...")
                     
                     # Add voice_id if available (official docs show this is supported)
                     if voice_id:
@@ -258,7 +256,7 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                     print(f"🔍 Dynamic variables: {dynamic_vars}")
                     print(f"🔧 Voice settings from era config: {voice_settings}")
                     print(f"📡 Conversation override structure: {json.dumps(conversation_override, indent=2)}")
-                    print(f"⚠️  Important: Voice overrides must be enabled in ElevenLabs agent security settings")
+                    #print(f"⚠️  Important: Voice overrides must be enabled in ElevenLabs agent security settings")
                     
                     # Try with both dynamic variables and conversation overrides
                     try:
@@ -315,9 +313,8 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                     # Start the conversation session
                     conversation.start_session()
                     
-                    print(f"ElevenLabs conversation started successfully")
-                    print(f"Era: {session_vars['era_name']} | Language: {lang} | Year: {year}")
-                    print(f"Dynamic variables passed to agent for era context customization")
+                    print(f"ElevenLabs conversation started successfully\n")
+                    #print(f"Era: {session_vars['era_name']} | Language: {lang} | Year: {year}")
                 except Exception as e:
                     print(f"Error starting ElevenLabs conversation: {str(e)}")
                     traceback.print_exc()
