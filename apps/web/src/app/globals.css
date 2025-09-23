@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0B1020;
+  --card: #121A2A;
+}
+
+html, body, #__next {
+  height: 100%;
+}
+
+body {
+  background: radial-gradient(1200px 600px at 80% -10%, rgba(108,99,255,0.15), transparent),
+              radial-gradient(800px 400px at 20% 110%, rgba(72,209,204,0.15), transparent),
+              var(--bg);
+  color: white;
+}
+
+.glass {
+  background: rgba(18, 26, 42, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.btn-primary {
+  @apply bg-primary hover:bg-primary-dark text-white font-medium rounded-lg px-4 py-2 transition shadow-glow;
+}
+
+.input {
+  @apply bg-card/70 border border-white/10 rounded-lg px-3 py-2 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/40;
+}
+
+
