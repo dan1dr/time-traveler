@@ -134,7 +134,7 @@ time-traveler/
 
 * **packages/shared-ts/** — TS helpers to consume JSON from web (future).
 
-* **infra/** — Deploy notes/configs (Vercel, Docker, Twilio).
+* **infra/** — Deploy notes/configs (Vercel, Docker).
 
 * **scripts/** — Convenience scripts (start dev server + ngrok, sample curl).
 
@@ -193,7 +193,7 @@ time-traveler/
 
 ```
 ELEVENLABS_API_KEY=
-ELEVENLABS_AGENT_ID=
+ELEVENLABS_AGENT_ID_1=
 TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=
 TWILIO_PHONE_NUMBER=+34...
@@ -246,5 +246,4 @@ pnpm dev
 * **Testing** from root using Poetry with `pytest` for comprehensive test coverage.
 * **Frontend never stores secrets** (only `NEXT_PUBLIC_*` vars).
 * Keep agent turns short to reduce latency; verify **barge-in** behavior.
-* Supabase/DB not required for MVP; add later for rate-limits or content editing.
 

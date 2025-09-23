@@ -69,7 +69,7 @@ class VoiceManager:
         # Enhanced logging with metadata
         gender = selected_voice.get('gender', 'unknown')
         age_range = selected_voice.get('age_range', 'unknown')
-        print(f"🎤 Selected voice: {selected_voice['name']} (ID: {selected_voice['id'][:8]}...) - {gender} {age_range} for {language}")
+        print(f"🎤 Selected voice: {selected_voice['name']} (ID: {selected_voice['id'][:8]}...) - {gender} {age_range}")
         return selected_voice
     
     def get_voice_id_from_env(self, language: str) -> Optional[str]:
