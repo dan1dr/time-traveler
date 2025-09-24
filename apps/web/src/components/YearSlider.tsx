@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 export function YearSlider({
   value,
@@ -10,30 +10,83 @@ export function YearSlider({
   onChange: (val: number) => void;
 }) {
   const era = useMemo(() => getEraForYear(value), [value]);
+  const [isSliding, setIsSliding] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange(parseInt(e.target.value, 10));
+  };
 
   return (
-    <div>
-      <div className="flex items-end justify-between mb-2">
-        <div>
-          <div className="text-sm uppercase tracking-wider text-slate-400">Era</div>
-          <div className="text-xl font-semibold">{era.label}</div>
-          <div className="text-slate-400 text-sm">{era.range}</div>
+    <div className="relative">
+      {/* Centered Year Display with Zoom Animation */}
+      <div className="text-center mb-6">
+        <div className="text-sm uppercase tracking-wider text-slate-400 mb-1">Era</div>
+        <div className={`text-2xl font-semibold transition-all duration-300 fk-grotesk-light ${
+          isSliding ? 'transform scale-110 text-white' : 'transform scale-100'
+        }`}>
+          {era.label}
         </div>
-        <div className="text-right">
-          <div className="text-sm uppercase tracking-wider text-slate-400">Year</div>
-          <div className="text-2xl font-bold">{value}</div>
+        <div className="text-slate-400 text-sm mb-4">{era.range}</div>
+        
+        {/* Year with zoom effect */}
+        <div className={`text-4xl font-bold transition-all duration-200 ${
+          isSliding ? 'transform scale-125 text-blue-200' : 'transform scale-100'
+        }`}>
+          {value}
         </div>
       </div>
-      <input
-        type="range"
-        min={0}
-        max={5000}
-        step={1}
-        value={value}
-        onChange={(e) => onChange(parseInt(e.target.value, 10))}
-        className="w-full accent-primary"
-      />
-      <div className="mt-2 text-sm text-slate-400">
+
+      {/* Crystal Slider Container */}
+      <div className="relative px-4">
+        {/* Elegant Axis Markers */}
+        <div className="absolute inset-x-4 top-0 flex justify-between text-xs text-slate-500 pointer-events-none">
+          <span className="transform -translate-x-2">0</span>
+          <span className="transform -translate-x-3">1000</span>
+          <span className="transform -translate-x-3">2000</span>
+          <span className="transform -translate-x-3">3000</span>
+          <span className="transform -translate-x-3">4000</span>
+          <span className="transform translate-x-2">5000+</span>
+        </div>
+        
+        {/* Axis ticks */}
+        <div className="absolute inset-x-4 top-4 flex justify-between pointer-events-none">
+          {[0, 1000, 2000, 3000, 4000, 5000].map((tick) => (
+            <div key={tick} className="w-px h-2 bg-slate-600"></div>
+          ))}
+        </div>
+
+        {/* Crystal Slider Track */}
+        <div className="relative mt-8">
+          <div className="absolute inset-x-0 top-1/2 transform -translate-y-1/2 h-2 rounded-full"
+               style={{
+                 background: 'linear-gradient(90deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05))',
+                 border: '1px solid rgba(255,255,255,0.2)',
+                 backdropFilter: 'blur(10px)'
+               }}
+          />
+          
+          {/* Custom Range Input */}
+          <input
+            type="range"
+            min={0}
+            max={5000}
+            step={1}
+            value={value}
+            onChange={handleChange}
+            onMouseDown={() => setIsSliding(true)}
+            onMouseUp={() => setIsSliding(false)}
+            onTouchStart={() => setIsSliding(true)}
+            onTouchEnd={() => setIsSliding(false)}
+            className="crystal-slider w-full h-6 bg-transparent appearance-none cursor-pointer relative z-10"
+            style={{
+              background: 'transparent'
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Era Description */}
+      <div className="mt-6 text-center text-sm text-slate-400 max-w-xs mx-auto">
         {era.description}
       </div>
     </div>
