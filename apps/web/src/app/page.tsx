@@ -8,7 +8,10 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 export default function Home() {
   const [phone, setPhone] = useState<PhoneValue>({ dial: "+34", number: "" });
   const [year, setYear] = useState<number>(1580);
-  const [lang, setLang] = useState<"en" | "es">("en");
+  // UI language (top-right toggle)
+  const [uiLang, setUiLang] = useState<"en" | "es">("en");
+  // Voice language to send to backend (Step 1 selection)
+  const [voiceLang, setVoiceLang] = useState<"en" | "es">("en");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -19,10 +22,54 @@ export default function Home() {
   const [fillSummon, setFillSummon] = useState(false);
   const [impact, setImpact] = useState(false);
   const [preOverlay, setPreOverlay] = useState(false);
+  const [showSpiral, setShowSpiral] = useState(false);
 
   const isValid = useMemo(() => {
     return phone.number.length >= 6; // simple check; Twilio will validate fully
   }, [phone.number]);
+
+  const DICT = {
+    en: {
+      heroTitle: "Call to another era.",
+      heroSubtitle:
+        "I am the Time Machine. I connect your present, through alchemy and artificial intelligence, with voices of the past and whispers of the future.",
+      guideMe: "Guide me",
+      chooseLanguage: "Choose your language",
+      chooseLanguageSub: "Select how you wish to speak with the traveler.",
+      phoneTitle: "Your number to the portal of eternity",
+      phoneSub: "Leave us your phone to receive the call.",
+      proceed: "Proceed to temporal gateway",
+      step3Title: "Select the era, traveler.",
+      step3Sub: "Pick a year and you will be called.",
+      callMe: "Call me",
+      loadingText: "Piercing the veil...",
+      back: "← Return to the beginning",
+      overlaySubtitle: "Activating travel machine...",
+      checkPhone: "Check Your Phone",
+      overlayStatus: "Connection bridging temporal dimensions...",
+    },
+    es: {
+      heroTitle: "Llama a otra era.",
+      heroSubtitle:
+        "Soy la Máquina del Tiempo. Conecto tu presente, a través de la alquimia y la IA, con voces del pasado y susurros del futuro.",
+      guideMe: "Guíame",
+      chooseLanguage: "Elige tu idioma",
+      chooseLanguageSub: "Selecciona cómo quieres hablar con el viajero.",
+      phoneTitle: "Tu número para el portal de la eternidad",
+      phoneSub: "Déjanos tu teléfono para recibir la llamada.",
+      proceed: "Continuar al portal temporal",
+      step3Title: "Selecciona la era, viajero",
+      step3Sub: "Elige un año y te llamará.",
+      callMe: "Llámame",
+      loadingText: "Atravesando el velo...",
+      back: "← Volver al inicio",
+      overlaySubtitle: "Activando la máquina de viaje...",
+      checkPhone: "Revisa tu teléfono",
+      overlayStatus: "Conexión uniendo dimensiones temporales...",
+    },
+  } as const;
+
+  const t = DICT[uiLang];
 
   async function initiateCall() {
     // Liquid fill + impact before animation
@@ -31,19 +78,25 @@ export default function Home() {
     setTimeout(() => setFillSummon(false), 600);
     setTimeout(() => setImpact(false), 260);
     setMessage(null);
+    // Start spiral immediately after click
+    setShowSpiral(true);
+    
     // Global blur before the card appears
     setPreOverlay(true);
-    const preDelay = 900;
+    const spiralDuration = 2000; // 2 seconds for spiral
+    const preDelay = spiralDuration + 300; // extra delay after spiral
     const overlayDuration = 8000;
 
     setTimeout(async () => {
       setPreOverlay(false);
       setLoading(true);
+      setShowSpiral(false); // hide spiral when card appears
 
       // Auto-hide overlay after duration
       setTimeout(() => {
         setLoading(false);
         setMessage(null);
+        setShowSpiral(false);
       }, overlayDuration);
 
       // Try to make the actual call in the background (but don't block the animation)
@@ -55,7 +108,7 @@ export default function Home() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             to: `${phone.dial}${phone.number}`,
-            lang,
+            lang: voiceLang,
             year,
           }),
         });
@@ -76,7 +129,7 @@ export default function Home() {
   }
 
   function handleLanguageSelect(selectedLang: "en" | "es") {
-    setLang(selectedLang);
+    setVoiceLang(selectedLang);
     setTimeout(() => setCurrentStep(2), 500);
   }
 
@@ -88,6 +141,18 @@ export default function Home() {
     <>
       {/* Fixed extended backdrop to avoid hard cut when scrolling */}
       <div className="hero-backdrop" aria-hidden="true" />
+      {/* Global language icon toggle */}
+      <div className="fixed top-4 right-4 z-40">
+        <button
+          type="button"
+          onClick={() => setUiLang(uiLang === 'en' ? 'es' : 'en')}
+          className="btn-primary btn-reflect h-9 px-4 text-sm"
+          aria-label="Toggle language"
+          title={uiLang === 'en' ? 'Español' : 'English'}
+        >
+          {uiLang === 'en' ? 'EN' : 'ES'}
+        </button>
+      </div>
       <main className={`hero-bg min-h-screen flex items-center justify-center text-center px-6 relative overflow-visible ${preOverlay ? 'pre-overlay-blur' : ''}`}>
         <div className="max-w-5xl transition-all duration-700 ease-out">
           {/* Hero content */}
@@ -97,17 +162,17 @@ export default function Home() {
             }`}
           >
             <h1 className="text-6xl md:text-7xl lg:text-8xl font-extrabold leading-[1.08] fk-grotesk-light whitespace-nowrap">
-              Call to another era.
+              {t.heroTitle}
             </h1>
             <p className="mt-5 text-slate-100 text-lg md:text-xl fk-grotesk-light">
-              I am the Time Traveler Machine. Through quantum threads that bind all moments, I can bridge your present with voices from antiquity's depths or tomorrow's distant shores, delivering echoes across the eternal continuum directly to your realm.
+              {t.heroSubtitle}
             </p>
             <div className="mt-8 flex items-center justify-center gap-3">
               <button
                 className={`btn-primary btn-liquid btn-reflect h-12 px-8 ${fillGuide ? 'is-filling' : ''}`}
                 onClick={handleGuideMe}
               >
-                Guide me
+                {t.guideMe}
               </button>
             </div>
           </div>
@@ -124,11 +189,11 @@ export default function Home() {
               {currentStep === 1 && (
                 <div className="step-enter step-enter-active w-full">
                   <div className="text-center mb-6">
-                    <h2 className="text-3xl md:text-4xl font-semibold mb-3 fk-grotesk-light">Choose your language</h2>
-                    <p className="text-slate-300 text-base fk-grotesk-thin">Select how you wish to speak with the traveler.</p>
+                    <h2 className="text-3xl md:text-4xl font-semibold mb-3 fk-grotesk-light">{t.chooseLanguage}</h2>
+                    <p className="text-slate-300 text-base fk-grotesk-thin">{t.chooseLanguageSub}</p>
                   </div>
                   <div className="flex justify-center">
-                    <LanguageToggle value={lang} onChange={handleLanguageSelect} />
+                    <LanguageToggle value={voiceLang} onChange={handleLanguageSelect} />
                   </div>
                 </div>
               )}
@@ -137,8 +202,8 @@ export default function Home() {
               {currentStep === 2 && (
                 <div className="step-enter step-enter-active w-full">
                   <div className="text-center mb-6">
-                    <h2 className="text-3xl md:text-4xl font-semibold mb-3 fk-grotesk-light">Your number to the portal of eternity</h2>
-                    <p className="text-slate-300 text-base fk-grotesk-thin">Leave us your phone and the traveler will call you.</p>
+                    <h2 className="text-3xl md:text-4xl font-semibold mb-3 fk-grotesk-light">{t.phoneTitle}</h2>
+                    <p className="text-slate-300 text-base fk-grotesk-thin">{t.phoneSub}</p>
                   </div>
                   <div className="space-y-4">
                     <CountryPhoneInput 
@@ -158,7 +223,7 @@ export default function Home() {
                           }}
                           className={`btn-primary btn-liquid btn-reflect h-10 px-6 ${fillProceed ? 'is-filling' : ''}`}
                         >
-                          Proceed to temporal gateway
+                          {t.proceed}
                         </button>
                       </div>
                     )}
@@ -170,14 +235,14 @@ export default function Home() {
               {currentStep === 3 && !loading && (
                 <div className={`step-enter step-enter-active w-full`}>
                   <div className="text-center mb-6">
-                    <h2 className="text-3xl md:text-4xl font-semibold mb-3 fk-grotesk-light">Navigate the temporal void</h2>
-                    <p className="text-slate-300 text-base fk-grotesk-thin">Drift through epochs... where will you anchor?</p>
+                    <h2 className="text-3xl md:text-4xl font-semibold mb-3 fk-grotesk-light">{t.step3Title}</h2>
+                    <p className="text-slate-300 text-base fk-grotesk-thin">{t.step3Sub}</p>
                   </div>
                   <div className="relative">
                     <div className="absolute -top-4 right-8 w-2 h-2 rounded-full sparkle" />
                     <div className="absolute top-2 right-16 w-1.5 h-1.5 rounded-full sparkle" style={{animationDelay: '0.6s'}} />
                     <div className="absolute -top-2 left-12 w-1 h-1 rounded-full sparkle" style={{animationDelay: '1.2s'}} />
-                    <YearSlider value={year} onChange={setYear} />
+                    <YearSlider value={year} onChange={setYear} lang={uiLang} />
                   </div>
                   <div className="text-center mt-8">
                     <button
@@ -187,7 +252,7 @@ export default function Home() {
                       loading ? 'travel-machine-activating' : ''
                     } ${fillSummon ? 'is-filling' : ''} ${impact ? 'is-impacting' : ''}`}
                     >
-                    {loading ? "Piercing the veil..." : "Call me"}
+                    {loading ? t.loadingText : t.callMe}
                     </button>
                     {message && (
                       <div className="text-sm text-slate-200 mt-4">{message}</div>
@@ -205,7 +270,7 @@ export default function Home() {
                   }}
                   className="text-xs text-slate-400 hover:text-slate-200 transition-colors"
                 >
-                  ← Return to the beginning
+                  {t.back}
                 </button>
               </div>
             </div>
@@ -214,8 +279,8 @@ export default function Home() {
           {loading && (
             <div className="connecting-overlay">
               <div className="connecting-card-enhanced fk-grotesk-thin">
-                <div className="era-year">Someone from the year {year} is calling you…</div>
-                <div className="subtitle">Activating travel machine...</div>
+                <div className="era-year">{uiLang === 'es' ? `Alguien del año ${year} te está llamando…` : `Someone from the year ${year} is calling you…`}</div>
+                <div className="subtitle">{t.overlaySubtitle}</div>
                 
                 <div className="liquid-phone-orb">
                   <div className="phone-icon">📱</div>
@@ -226,13 +291,15 @@ export default function Home() {
                 </div>
                 
                 <div className="check-phone-btn" aria-disabled="true">
-                  Check Your Phone
+                  {t.checkPhone}
                 </div>
                 
-                <div className="status-text">Connection bridging temporal dimensions...</div>
+                <div className="status-text">{t.overlayStatus}</div>
               </div>
             </div>
           )}
+          {/* Epic spiral animation - rendered outside overlay so it shows during delay */}
+          {showSpiral && <div className="button-spiral" aria-hidden="true" />}
         </div>
       </main>
 

@@ -5,11 +5,13 @@ import { useMemo, useState } from "react";
 export function YearSlider({
   value,
   onChange,
+  lang = 'en',
 }: {
   value: number;
   onChange: (val: number) => void;
+  lang?: 'en' | 'es';
 }) {
-  const era = useMemo(() => getEraForYear(value), [value]);
+  const era = useMemo(() => getEraForYear(value, lang), [value, lang]);
   const [isSliding, setIsSliding] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -20,7 +22,7 @@ export function YearSlider({
     <div className="relative">
       {/* Centered Year Display with Zoom Animation */}
       <div className="text-center mb-6 year-header" style={{minHeight:'8.5rem'}}>
-        <div className="text-sm uppercase tracking-wider text-slate-400 mb-1">Era</div>
+        <div className="text-sm uppercase tracking-wider text-slate-400 mb-1">{lang === 'es' ? 'Era' : 'Era'}</div>
         <div className={`text-2xl font-semibold transition-transform duration-300 fk-grotesk-light will-change-transform`}
           style={{transform: isSliding ? 'scale(1.06)' : 'scale(1)'}}>
           {era.label}
@@ -95,19 +97,38 @@ export function YearSlider({
   );
 }
 
-function getEraForYear(year: number) {
-  if (year <= 500) return { label: "Ancient Times", range: "0–500", description: "Philosophy, myth, empire—reverence for gods and nature." };
-  if (year <= 1500) return { label: "Medieval", range: "500–1500", description: "Honor and faith—feudal order and chivalry." };
-  if (year <= 1600) return { label: "Renaissance", range: "1400–1600", description: "Arts and sciences flourish—curiosity awakens." };
-  if (year <= 1750) return { label: "Baroque", range: "1600–1750", description: "Refinement and grandeur—courts and ornament." };
-  if (year <= 1900) return { label: "Industrial", range: "1750–1900", description: "Steam and steel—cities, factories, invention." };
-  if (year <= 1950) return { label: "Early Modern", range: "1900–1950", description: "Acceleration and upheaval—radio to rockets." };
-  if (year <= 2000) return { label: "Mid-Late 20th", range: "1950–2000", description: "Groovy modernity—space age and culture waves." };
-  if (year <= 2030) return { label: "Contemporary", range: "2000–2030", description: "Connected world—digital transformation everywhere." };
-  if (year <= 2050) return { label: "AI Renaissance", range: "2030–2050", description: "Human–AI symbiosis—short, sharp insights." };
-  if (year <= 2200) return { label: "Interplanetary", range: "2050–2200", description: "Multi-planetary—Martian colonies, orbital links." };
-  if (year <= 2500) return { label: "Transcendent", range: "2200–2500", description: "Post-human perspectives—energy and information." };
-  return { label: "Far Future", range: "2500–3000", description: "Galactic consciousness—beyond linear time." };
+function getEraForYear(year: number, lang: 'en' | 'es') {
+  const EN = [
+    { until: 500, label: 'Ancient Times', range: '0–500', description: 'Philosophy, myth, empire—reverence for gods and nature.' },
+    { until: 1500, label: 'Medieval', range: '500–1500', description: 'Honor and faith—feudal order and chivalry.' },
+    { until: 1600, label: 'Renaissance', range: '1400–1600', description: 'Arts and sciences flourish—curiosity awakens.' },
+    { until: 1750, label: 'Baroque', range: '1600–1750', description: 'Refinement and grandeur—courts and ornament.' },
+    { until: 1900, label: 'Industrial', range: '1750–1900', description: 'Steam and steel—cities, factories, invention.' },
+    { until: 1950, label: 'Early Modern', range: '1900–1950', description: 'Acceleration and upheaval—radio to rockets.' },
+    { until: 2000, label: 'Mid-Late 20th', range: '1950–2000', description: 'Groovy modernity—space age and culture waves.' },
+    { until: 2030, label: 'Contemporary', range: '2000–2030', description: 'Connected world—digital transformation everywhere.' },
+    { until: 2050, label: 'AI Renaissance', range: '2030–2050', description: 'Human–AI symbiosis—short, sharp insights.' },
+    { until: 2200, label: 'Interplanetary', range: '2050–2200', description: 'Multi-planetary—Martian colonies, orbital links.' },
+    { until: 2500, label: 'Transcendent', range: '2200–2500', description: 'Post-human perspectives—energy and information.' },
+    { until: 3000, label: 'Far Future', range: '2500–3000', description: 'Galactic consciousness—beyond linear time.' },
+  ];
+  const ES = [
+    { until: 500, label: 'Antigüedad', range: '0–500', description: 'Filosofía, mito, imperio—reverencia por dioses y naturaleza.' },
+    { until: 1500, label: 'Medieval', range: '500–1500', description: 'Honor y fe—orden feudal y caballería.' },
+    { until: 1600, label: 'Renacimiento', range: '1400–1600', description: 'Florecen artes y ciencias—despierta la curiosidad.' },
+    { until: 1750, label: 'Barroco', range: '1600–1750', description: 'Refinamiento y grandeza—cortes y ornamento.' },
+    { until: 1900, label: 'Industrial', range: '1750–1900', description: 'Vapor y acero—ciudades, fábricas, invención.' },
+    { until: 1950, label: 'Moderno temprano', range: '1900–1950', description: 'Aceleración y cambios—de la radio a los cohetes.' },
+    { until: 2000, label: 'Siglo XX', range: '1950–2000', description: 'Modernidad vibrante—era espacial y olas culturales.' },
+    { until: 2030, label: 'Contemporáneo', range: '2000–2030', description: 'Mundo conectado—transformación digital en todas partes.' },
+    { until: 2050, label: 'Renacimiento IA', range: '2030–2050', description: 'Simbiosis humano‑IA—ideas breves y certeras.' },
+    { until: 2200, label: 'Interplanetario', range: '2050–2200', description: 'Multi‑planetario—colonias en Marte y enlaces orbitales.' },
+    { until: 2500, label: 'Trascendente', range: '2200–2500', description: 'Perspectivas post‑humanas—energía e información.' },
+    { until: 3000, label: 'Futuro lejano', range: '2500–3000', description: 'Conciencia galáctica—más allá del tiempo lineal.' },
+  ];
+  const table = lang === 'es' ? ES : EN;
+  const match = table.find(e => year <= e.until) || table[table.length - 1];
+  return { label: match.label, range: match.range, description: match.description };
 }
 
 

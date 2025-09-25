@@ -541,6 +541,145 @@ body {
   font-weight: 300;
 }
 
+/* TIME MACHINE PORTAL ANIMATION */
+.button-spiral {
+  position: fixed;
+  bottom: 30vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 9999px;
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8) 0%, transparent 50%),
+    radial-gradient(circle at 70% 70%, rgba(108,99,255,0.6) 0%, transparent 50%),
+    conic-gradient(from 0deg, rgba(72,209,204,0.8), rgba(255,255,255,0.9), rgba(108,99,255,0.8), rgba(72,209,204,0.8));
+  border: 2px solid rgba(255,255,255,0.9);
+  box-shadow: 
+    0 0 40px rgba(255,255,255,0.7),
+    0 0 80px rgba(108,99,255,0.4),
+    inset 0 0 20px rgba(255,255,255,0.3);
+  backdrop-filter: blur(15px) saturate(200%);
+  opacity: 1;
+  animation: timeMachinePortal 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  pointer-events: none;
+  z-index: 65;
+}
+
+/* Particle trail effects */
+.button-spiral::before {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  border-radius: 9999px;
+  background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.4), transparent, rgba(108,99,255,0.3), transparent);
+  animation: particleTrail 0.8s linear infinite;
+  z-index: -1;
+}
+
+/* Energy ring pulse */
+.button-spiral::after {
+  content: '';
+  position: absolute;
+  inset: -40px;
+  border-radius: 9999px;
+  border: 1px solid rgba(72,209,204,0.6);
+  box-shadow: 0 0 30px rgba(72,209,204,0.4);
+  animation: energyRing 1.2s ease-out infinite;
+  z-index: -2;
+}
+
+@keyframes timeMachinePortal {
+  0% {
+    transform: translate(-50%, 0) rotate(0deg) scale(1);
+    opacity: 1;
+    filter: hue-rotate(0deg) brightness(1);
+  }
+  10% {
+    transform: translate(-50%, -20px) rotate(90deg) scale(1.2);
+    opacity: 0.95;
+    filter: hue-rotate(30deg) brightness(1.2);
+    box-shadow: 
+      0 0 60px rgba(255,255,255,0.8),
+      0 0 120px rgba(108,99,255,0.6),
+      inset 0 0 30px rgba(255,255,255,0.4);
+  }
+  25% {
+    transform: translate(calc(-50% + 80px), -80px) rotate(270deg) scale(1.5);
+    opacity: 0.9;
+    filter: hue-rotate(90deg) brightness(1.4);
+    box-shadow: 
+      0 0 100px rgba(72,209,204,0.9),
+      0 0 200px rgba(255,255,255,0.5),
+      inset 0 0 40px rgba(72,209,204,0.6);
+  }
+  40% {
+    transform: translate(calc(-50% - 60px), -160px) rotate(540deg) scale(1.8);
+    opacity: 0.85;
+    filter: hue-rotate(180deg) brightness(1.6);
+    box-shadow: 
+      0 0 150px rgba(108,99,255,1),
+      0 0 300px rgba(255,255,255,0.4),
+      inset 0 0 60px rgba(108,99,255,0.8);
+  }
+  60% {
+    transform: translate(calc(-50% + 120px), -280px) rotate(900deg) scale(2.2);
+    opacity: 0.8;
+    filter: hue-rotate(270deg) brightness(1.8);
+    box-shadow: 
+      0 0 200px rgba(255,255,255,0.9),
+      0 0 400px rgba(72,209,204,0.6),
+      inset 0 0 80px rgba(255,255,255,0.9);
+  }
+  80% {
+    transform: translate(calc(-50% - 100px), -420px) rotate(1440deg) scale(1.5);
+    opacity: 0.6;
+    filter: hue-rotate(360deg) brightness(2);
+    box-shadow: 
+      0 0 300px rgba(108,99,255,0.8),
+      0 0 600px rgba(255,255,255,0.3),
+      inset 0 0 100px rgba(255,255,255,0.7);
+  }
+  95% {
+    transform: translate(-50%, -580px) rotate(2160deg) scale(0.5);
+    opacity: 0.2;
+    filter: hue-rotate(450deg) brightness(2.5);
+    box-shadow: 
+      0 0 500px rgba(255,255,255,0.6),
+      0 0 1000px rgba(72,209,204,0.2);
+  }
+  100% {
+    transform: translate(-50%, -700px) rotate(2520deg) scale(0.1);
+    opacity: 0;
+    filter: hue-rotate(540deg) brightness(3);
+    box-shadow: 0 0 800px rgba(255,255,255,0.1);
+  }
+}
+
+@keyframes particleTrail {
+  0% { transform: rotate(0deg) scale(1); opacity: 0.8; }
+  50% { transform: rotate(180deg) scale(1.1); opacity: 0.6; }
+  100% { transform: rotate(360deg) scale(1); opacity: 0.8; }
+}
+
+@keyframes energyRing {
+  0% { 
+    transform: scale(1); 
+    opacity: 0.8; 
+    box-shadow: 0 0 30px rgba(72,209,204,0.4);
+  }
+  50% { 
+    transform: scale(1.5); 
+    opacity: 0.4; 
+    box-shadow: 0 0 60px rgba(72,209,204,0.6);
+  }
+  100% { 
+    transform: scale(2); 
+    opacity: 0; 
+    box-shadow: 0 0 100px rgba(72,209,204,0.2);
+  }
+}
+
 /* Legacy connecting card for backwards compatibility */
 .connecting-card {
   border-radius: 20px;
