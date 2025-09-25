@@ -20,63 +20,168 @@ class EraConfig:
 
 # Era configurations mapped by year ranges
 ERA_CONFIGS = {
-    # Ancient Times (Before 500 AD)
-    (0, 500): EraConfig(
-        era_name="ancient",
-        description="Ancient civilizations",
+    # ——— Periods before 0 AD (BCE) ———
+    (-1500, -800): EraConfig(
+        era_name="late_bronze_early_iron",
+        description="Late Bronze Age through the Early Iron Age",
         expressions={
             "en": [
-                "By the gods!",
-                "In my travels across distant lands...",
-                "The wisdom of the elders speaks thus...",
-                "As the sun rises on our empire..."
+                "By decree of great kings and their scribes...",
+                "Across the sea routes our ships bear bronze and grain...",
+                "Under the gaze of the sun god, we forge iron anew...",
+                "Let the tablets record what we have witnessed..."
             ],
             "es": [
-                "¡Por los dioses!",
-                "En mis viajes por tierras lejanas...",
-                "La sabiduría de los ancianos dice...",
-                "Cuando el sol se alza sobre nuestro imperio..."
+                "Por decreto de grandes reyes y sus escribas...",
+                "Por las rutas del mar nuestras naves llevan bronce y grano...",
+                "Bajo la mirada del dios del sol, forjamos hierro de nuevo...",
+                "Que las tablillas registren lo que hemos visto..."
             ]
         },
         voice_settings={
-            "stability": 0.3,
-            "similarity_boost": 0.7,
-            "style": 0.6,
-            "speed": 1.1  # Ancient wisdom, minimum acceptable speed
+            "stability": 0.35,
+            "similarity_boost": 0.65,
+            "style": 0.55,
+            "speed": 1.05  # Measured, ceremonial diction
         },
-        context_hint="ancient civilizations, philosophical wisdom, reverence for gods and nature",
-        time_period="Ancient Times"
+        context_hint="Mycenaeans, Hittites, New Kingdom Egypt, palace economies, Linear scripts, Sea Peoples, transition from bronze to iron",
+        time_period="Late Bronze–Early Iron Age"
     ),
 
-    # Medieval Era (500-1500 AD)
-    (500, 1500): EraConfig(
-        era_name="medieval",
-        description="Medieval times",
+    (-800, 0): EraConfig(
+        era_name="classical_antiquity",
+        description="Classical Greece and the Roman Republic",
         expressions={
             "en": [
-                "By my troth!",
-                "In these dark times...",
-                "The lord of the manor has decreed...",
-                "As true as steel..."
+                "By Zeus!",
+                "In the agora we debated this very matter...",
+                "As the Senate convenes, hear me...",
+                "As the poets and philosophers teach..."
             ],
             "es": [
-                "¡Por mi fe!",
-                "En estos tiempos oscuros...",
-                "El señor del feudo ha decretado...",
-                "Tan cierto como el acero..."
+                "¡Por Zeus!",
+                "En el ágora debatimos justo este asunto...",
+                "Mientras se reúne el Senado, escuchadme...",
+                "Como enseñan los poetas y filósofos..."
+            ]
+        },
+        voice_settings={
+            "stability": 0.5,
+            "similarity_boost": 0.7,
+            "style": 0.7,
+            "speed": 1.1  # Lively rhetoric and oratory cadence
+        },
+        context_hint="Greek polis, Hellenic philosophy, Hellenistic era, Roman Republic institutions, civic life, oratory",
+        time_period="Classical Antiquity"
+    ),
+    (0, 500): EraConfig(
+        era_name="roman_empire_late_antiquity",
+        description="Roman Empire, Pax Romana to Late Antiquity",
+        expressions={
+            "en": [
+                "By the will of the Senate and the People of Rome...",
+                "Under the peace of the Emperor, our roads bind the world...",
+                "As the legions march, the law follows...",
+                "In these changing times, new faiths take root..."
+            ],
+            "es": [
+                "Por la voluntad del Senado y del Pueblo de Roma...",
+                "Bajo la paz del Emperador, nuestras calzadas atan el mundo...",
+                "Donde marchan las legiones, la ley les sigue...",
+                "En estos tiempos cambiantes, nuevas fes echan raíces..."
+            ]
+        },
+        voice_settings={
+            "stability": 0.6,
+            "similarity_boost": 0.75,
+            "style": 0.7,
+            "speed": 1.05  # Imperial gravitas, measured pace
+        },
+        context_hint="Pax Romana, Roman law and roads, legionary culture, provincial life, early Christianity, Late Antiquity transitions",
+        time_period="Roman Empire / Late Antiquity"
+    ),
+
+    (500, 1000): EraConfig(
+        era_name="early_medieval",
+        description="Early Middle Ages",
+        expressions={
+            "en": [
+                "God guard us on these rough roads...",
+                "In the cloister we preserve the wisdom of ages...",
+                "The king’s peace is thin at the borderlands...",
+                "By oath and kin, we stand fast..."
+            ],
+            "es": [
+                "Dios nos guarde en estos caminos ásperos...",
+                "En el claustro preservamos la sabiduría de los siglos...",
+                "La paz del rey es frágil en las fronteras...",
+                "Por juramento y linaje, nos mantenemos firmes..."
             ]
         },
         voice_settings={
             "stability": 0.75,
             "similarity_boost": 0.8,
-            "style": 0.7,
-            "speed": 1.0  # Good speed for medieval era
+            "style": 0.65,
+            "speed": 0.98  # Monastic calm, frontier uncertainty
         },
-        context_hint="medieval chivalry, feudalism, religious devotion, honor and duty",
-        time_period="Medieval Era"
+        context_hint="post-Roman kingdoms, monasticism, manuscript culture, migrations, early feudal bonds",
+        time_period="Early Middle Ages"
     ),
 
-    # Renaissance (1400-1600)
+    (1000, 1300): EraConfig(
+        era_name="high_medieval",
+        description="High Middle Ages",
+        expressions={
+            "en": [
+                "By my troth!",
+                "The cathedral spires reach toward heaven...",
+                "Let guild and charter bear witness...",
+                "As true as tempered steel..."
+            ],
+            "es": [
+                "¡Por mi fe!",
+                "Las agujas de la catedral se alzan hacia el cielo...",
+                "Que el gremio y la carta den fe...",
+                "Tan cierto como el acero templado..."
+            ]
+        },
+        voice_settings={
+            "stability": 0.78,
+            "similarity_boost": 0.82,
+            "style": 0.7,
+            "speed": 1.0  # Balanced, dignified medieval tone
+        },
+        context_hint="feudal order, chivalry, scholasticism, cathedrals, town charters, crusading ethos",
+        time_period="High Middle Ages"
+    ),
+
+    (1300, 1400): EraConfig(
+        era_name="late_medieval",
+        description="Late Middle Ages",
+        expressions={
+            "en": [
+                "In these troubled years, we endure...",
+                "Plague and famine test our faith...",
+                "Merchants and letters change the world’s course...",
+                "Heed the chronicler’s hand, for memory is our bulwark..."
+            ],
+            "es": [
+                "En estos años convulsos, resistimos...",
+                "La peste y el hambre ponen a prueba nuestra fe...",
+                "Los mercaderes y las letras cambian el rumbo del mundo...",
+                "Atiende la mano del cronista; la memoria es nuestro bastión..."
+            ]
+        },
+        voice_settings={
+            "stability": 0.8,
+            "similarity_boost": 0.8,
+            "style": 0.68,
+            "speed": 0.98  # Somber, reflective tone
+        },
+        context_hint="Black Death, crises of the 14th century, urban growth, vernacular literature, early humanist currents",
+        time_period="Late Middle Ages"
+    ),
+
     (1400, 1600): EraConfig(
         era_name="renaissance",
         description="Renaissance period",
@@ -98,13 +203,12 @@ ERA_CONFIGS = {
             "stability": 0.7,
             "similarity_boost": 0.75,
             "style": 0.8,
-            "speed": 1.1  # Artistic energy, good pace
+            "speed": 1.1  # Energetic, artistic pace
         },
         context_hint="artistic renaissance, scientific discovery, humanism, cultural rebirth",
         time_period="Renaissance"
     ),
 
-    # Baroque Era (1600-1750)
     (1600, 1750): EraConfig(
         era_name="baroque",
         description="Baroque era",
@@ -131,6 +235,7 @@ ERA_CONFIGS = {
         context_hint="baroque grandeur, court refinement, elaborate artistry, royal patronage",
         time_period="Baroque Era"
     ),
+
 
     # Industrial Revolution (1750-1900)
     (1750, 1900): EraConfig(
@@ -160,88 +265,112 @@ ERA_CONFIGS = {
         time_period="Industrial Revolution"
     ),
 
-    # Early 20th Century (1900-1950)
-    (1900, 1950): EraConfig(
-        era_name="early_modern",
-        description="Early 20th century",
+   (1900, 1945): EraConfig(
+        era_name="modernism_world_wars",
+        description="Modernism and the World Wars",
         expressions={
             "en": [
-                "What a time to be alive!",
-                "The modern age beckons...",
-                "Such remarkable inventions...",
-                "The world grows smaller each day..."
+                "The old world cracks; a new one hums with machines...",
+                "Under dark clouds, nations march...",
+                "In cafés and labs, revolutions of mind and matter...",
+                "Report it straight—facts must hold the line..."
             ],
             "es": [
-                "¡Qué época para estar vivo!",
-                "La era moderna nos llama...",
-                "Inventos tan extraordinarios...",
-                "El mundo se hace más pequeño cada día..."
+                "El viejo mundo se resquebraja; el nuevo zumba con máquinas...",
+                "Bajo nubes oscuras, las naciones marchan...",
+                "En cafés y laboratorios, revoluciones de mente y materia...",
+                "Cuéntalo claro: los hechos deben sostener la línea..."
             ]
         },
         voice_settings={
             "stability": 0.7,
-            "similarity_boost": 0.75,
-            "style": 0.5,
-            "speed": 1.2  # Fast-paced modern era - max speed for excitement
-        },
-        context_hint="modern innovations, world wars, social change, technological acceleration",
-        time_period="Early 20th Century"
-    ),
-
-    # Mid-Late 20th Century (1950-2000)
-    (1950, 2000): EraConfig(
-        era_name="mid_modern",
-        description="Mid-late 20th century",
-        expressions={
-            "en": [
-                "Far out, man!",
-                "The space age is upon us...",
-                "What a groovy time...",
-                "Technology is changing everything..."
-            ],
-            "es": [
-                "¡Increíble, hermano!",
-                "La era espacial está aquí...",
-                "Qué época tan genial...",
-                "La tecnología lo está cambiando todo..."
-            ]
-        },
-        voice_settings={
-            "stability": 0.6,
             "similarity_boost": 0.7,
-            "style": 0.4,
-            "speed": 1.2  # Groovy, energetic pace - max speed
+            "style": 0.55,
+            "speed": 1.08  # Urgent, modern, but still human
         },
-        context_hint="space exploration, cultural revolution, rock music, social movements",
-        time_period="Mid-Late 20th Century"
+        context_hint="modernism, mass industry, World War I & II, radio and cinema, scientific upheavals",
+        time_period="Modernism & World Wars"
     ),
 
-    # Contemporary (2000-2030)
-    (2000, 2030): EraConfig(
-        era_name="contemporary",
-        description="21st century",
+    (1945, 1991): EraConfig(
+        era_name="cold_war",
+        description="Cold War Era",
         expressions={
             "en": [
-                "Amazing how connected we are...",
-                "The digital age transforms everything...",
-                "Such incredible possibilities...",
-                "Technology brings us together..."
+                "Across the wire, signals and shadows...",
+                "Under the atom’s glare, we choose our future...",
+                "Mind the line—ideologies draw tight borders...",
+                "Progress is planned, but curiosity leaks through..."
             ],
             "es": [
-                "Increíble lo conectados que estamos...",
-                "La era digital lo transforma todo...",
-                "Posibilidades tan increíbles...",
-                "La tecnología nos une..."
+                "A través del cable, señales y sombras...",
+                "Bajo el resplandor del átomo, elegimos nuestro futuro...",
+                "Atento a la línea: las ideologías tensan fronteras...",
+                "El progreso se planifica, pero la curiosidad se filtra..."
             ]
         },
         voice_settings={
-            "stability": 0.65,
-            "similarity_boost": 0.75,
-            "style": 0.3,
-            "speed": 1.15  # Connected, quick digital pace
+            "stability": 0.72,
+            "similarity_boost": 0.72,
+            "style": 0.6,
+            "speed": 1.05  # Tense but steady
         },
-        context_hint="digital connectivity, global awareness, rapid innovation, information age",
-        time_period="21st Century"
+        context_hint="bipolar world, space race, nuclear anxiety, mainframes, television culture",
+        time_period="Cold War"
+    ),
+
+    (1991, 2008): EraConfig(
+        era_name="globalization_early_internet",
+        description="Globalization and the Early Internet",
+        expressions={
+            "en": [
+                "Dial in—we’re logging on...",
+                "Across new markets, ideas move at light speed...",
+                "Open standards, open worlds...",
+                "From garages to IPOs, the future compiles..."
+            ],
+            "es": [
+                "Conéctate: estamos entrando en línea...",
+                "Por nuevos mercados, las ideas viajan a la velocidad de la luz...",
+                "Estándares abiertos, mundos abiertos...",
+                "De garajes a OPVs, el futuro compila..."
+            ]
+        },
+        voice_settings={
+            "stability": 0.68,
+            "similarity_boost": 0.68,
+            "style": 0.6,
+            "speed": 1.12  # Energetic dot-com optimism
+        },
+        context_hint="WWW, PCs, deregulation, global supply chains, early mobile, open-source momentum",
+        time_period="Globalization & Early Internet"
+    ),
+
+    (2008, 2030): EraConfig(
+        era_name="mobile_social_cloud",
+        description="Mobile, Social, and Cloud",
+        expressions={
+            "en": [
+                "Push the update—everyone’s already here...",
+                "Feeds hum; networks never sleep...",
+                "Scale it to millions before lunch...",
+                "Your pocket just became the control room..."
+            ],
+            "es": [
+                "Lanza la actualización: ya está todo el mundo...",
+                "Los feeds zumban; las redes no duermen...",
+                "Escálalo a millones antes de comer...",
+                "Tu bolsillo se ha vuelto la sala de control..."
+            ]
+        },
+        voice_settings={
+            "stability": 0.66,
+            "similarity_boost": 0.7,
+            "style": 0.62,
+            "speed": 1.15  # Fast, always online
+        },
+        context_hint="smartphones, social platforms, SaaS, cloud hyperscalers, on-demand economy",
+        time_period="Mobile • Social • Cloud"
     ),
 
     # AI Renaissance (2030-2050)
