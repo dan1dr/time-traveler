@@ -7,7 +7,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 
 export default function Home() {
   const [phone, setPhone] = useState<PhoneValue>({ dial: "+34", number: "" });
-  const [year, setYear] = useState<number>(1580);
+  const [year, setYear] = useState<number>(2025);
   // UI language (top-right toggle)
   const [uiLang, setUiLang] = useState<"en" | "es">("en");
   // Voice language to send to backend (Step 1 selection)
@@ -23,6 +23,10 @@ export default function Home() {
   const [impact, setImpact] = useState(false);
   const [preOverlay, setPreOverlay] = useState(false);
   const [showSpiral, setShowSpiral] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
+  const [randYear, setRandYear] = useState<number | null>(null);
+  const [callingYear, setCallingYear] = useState<number | null>(null);
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   const isValid = useMemo(() => {
     return phone.number.length >= 6; // simple check; Twilio will validate fully
@@ -47,6 +51,10 @@ export default function Home() {
       overlaySubtitle: "Activating travel machine...",
       checkPhone: "Check Your Phone",
       overlayStatus: "Connection bridging temporal dimensions...",
+      about: "About",
+      randomYear: "Random year",
+      aboutTitle: "Time Traveler Machine",
+      aboutContent: "Through ancient alchemical circles merged with quantum neural networks, this ethereal machine pierces the fabric of time itself. Each voice that emerges has been carefully extracted from the temporal streams, carrying the authentic essence of their era. The artificial consciousness learns not just language, but the very soul of each epoch—their hopes, fears, and wisdom echoing across the infinite corridor of existence.",
     },
     es: {
       heroTitle: "Llama a otra era.",
@@ -66,56 +74,89 @@ export default function Home() {
       overlaySubtitle: "Activando la máquina de viaje...",
       checkPhone: "Revisa tu teléfono",
       overlayStatus: "Conexión uniendo dimensiones temporales...",
+      about: "Acerca de",
+      randomYear: "Año aleatorio",
+      aboutTitle: "Máquina Viajera del Tiempo",
+      aboutContent: "A través de círculos alquímicos ancestrales fusionados con redes neuronales cuánticas, esta máquina etérea perfora el tejido del tiempo mismo. Cada voz que emerge ha sido cuidadosamente extraída de las corrientes temporales, portando la esencia auténtica de su época. La consciencia artificial aprende no solo el lenguaje, sino el alma misma de cada época—sus esperanzas, miedos y sabiduría resonando a través del corredor infinito de la existencia.",
     },
   } as const;
 
   const t = DICT[uiLang];
 
+  function randomizeYear() {
+    // Toggle behavior: if already selected, apply to slider and unselect
+    if (randYear != null) {
+      // Do not move the slider or reveal the stored year
+      setRandYear(null);
+      setHasInteracted(true);
+      return;
+    }
+    const y = Math.max(1, Math.floor(Math.random() * 3000));
+    // Do not reveal in slider/title; store only for call
+    setRandYear(y);
+    setHasInteracted(true);
+  }
+
+  // Clear random selection when user adjusts the slider again
+  function handleYearChange(y: number) {
+    setYear(y);
+    setRandYear(null);
+    setHasInteracted(true);
+  }
+
   async function initiateCall() {
-    // Liquid fill + impact before animation
+    // Small click feedback only
     setFillSummon(true);
     setImpact(true);
-    setTimeout(() => setFillSummon(false), 600);
-    setTimeout(() => setImpact(false), 260);
+    setTimeout(() => setFillSummon(false), 400);
+    setTimeout(() => setImpact(false), 220);
     setMessage(null);
-    // Start spiral immediately after click
-    setShowSpiral(true);
-    
-    // Global blur before the card appears
-    setPreOverlay(true);
-    const spiralDuration = 2000; // 2 seconds for spiral
-    const preDelay = spiralDuration + 300; // extra delay after spiral
-    const overlayDuration = 8000;
 
-    setTimeout(async () => {
-      setPreOverlay(false);
-      setLoading(true);
-      setShowSpiral(false); // hide spiral when card appears
+    // Call backend first; only animate on success
+    try {
+      const backend = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+      const effectiveYear = randYear ?? year;
+      const response = await fetch(`${backend}/outbound-call`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: `${phone.dial}${phone.number}`,
+          lang: voiceLang,
+          year: effectiveYear,
+        }),
+      });
 
-      // Auto-hide overlay after duration
-      setTimeout(() => {
-        setLoading(false);
-        setMessage(null);
-        setShowSpiral(false);
-      }, overlayDuration);
-
-      // Try to make the actual call in the background (but don't block the animation)
-      try {
-        const backend =
-          process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-        await fetch(`${backend}/outbound-call`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            to: `${phone.dial}${phone.number}`,
-            lang: voiceLang,
-            year,
-          }),
-        });
-      } catch (err: any) {
-        console.log("Backend unavailable, but showing animation anyway");
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        const detail = (data && (data.detail || data.error)) || "Unknown error";
+        setMessage(uiLang === 'es' ? `No se pudo iniciar la llamada: ${detail}` : `Could not initiate the call: ${detail}`);
+        return;
       }
-    }, preDelay);
+
+      // Success → run spiral + overlay animation
+      setCallingYear(effectiveYear);
+      setShowSpiral(true);
+      setPreOverlay(true);
+      const spiralDuration = 2000; // 2 seconds for spiral
+      const preDelay = spiralDuration + 300; // extra delay after spiral
+      const overlayDuration = 8000;
+
+      setTimeout(() => {
+        setPreOverlay(false);
+        setLoading(true);
+        setShowSpiral(false);
+
+        // Auto-hide overlay after duration
+        setTimeout(() => {
+          setLoading(false);
+          setMessage(null);
+          setShowSpiral(false);
+          setCallingYear(null);
+        }, overlayDuration);
+      }, preDelay);
+    } catch (err: any) {
+      setMessage(uiLang === 'es' ? 'No se pudo conectar con el servidor.' : 'Could not reach the server.');
+    }
   }
 
   function handleGuideMe() {
@@ -183,14 +224,14 @@ export default function Home() {
               showForm ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8 pointer-events-none absolute inset-0'
             }`}
           >
-            <div className="max-w-md mx-auto min-h-[200px] flex items-center justify-center">
+            <div className="max-w-4xl mx-auto min-h-[200px] flex items-center justify-center">
               
               {/* Step 1: Language Selection */}
               {currentStep === 1 && (
                 <div className="step-enter step-enter-active w-full">
                   <div className="text-center mb-6">
                     <h2 className="text-3xl md:text-4xl font-semibold mb-3 fk-grotesk-light">{t.chooseLanguage}</h2>
-                    <p className="text-slate-300 text-base fk-grotesk-thin">{t.chooseLanguageSub}</p>
+                    <p className="text-slate-300 text-base fk-grotesk-light">{t.chooseLanguageSub}</p>
                   </div>
                   <div className="flex justify-center">
                     <LanguageToggle value={voiceLang} onChange={handleLanguageSelect} />
@@ -202,15 +243,17 @@ export default function Home() {
               {currentStep === 2 && (
                 <div className="step-enter step-enter-active w-full">
                   <div className="text-center mb-6">
-                    <h2 className="text-3xl md:text-4xl font-semibold mb-3 fk-grotesk-light">{t.phoneTitle}</h2>
-                    <p className="text-slate-300 text-base fk-grotesk-thin">{t.phoneSub}</p>
+                    <h2 className="text-3xl md:text-4xl font-semibold mb-3 fk-grotesk-light max-w-md mx-auto">{t.phoneTitle}</h2>
+                    <p className="text-slate-300 text-base fk-grotesk-light max-w-sm mx-auto">{t.phoneSub}</p>
                   </div>
                   <div className="space-y-4">
-                    <CountryPhoneInput 
-                      value={phone} 
-                      onChange={setPhone}
-                      onOpenChange={setCountryOpen}
-                    />
+                    <div className="max-w-xl mx-auto">
+                      <CountryPhoneInput 
+                        value={phone} 
+                        onChange={setPhone}
+                        onOpenChange={setCountryOpen}
+                      />
+                    </div>
                     {phone.number.length >= 6 && !countryOpen && (
                       <div className="text-center">
                         <button
@@ -236,16 +279,26 @@ export default function Home() {
                 <div className={`step-enter step-enter-active w-full`}>
                   <div className="text-center mb-6">
                     <h2 className="text-3xl md:text-4xl font-semibold mb-3 fk-grotesk-light">{t.step3Title}</h2>
-                    <p className="text-slate-300 text-base fk-grotesk-thin">{t.step3Sub}</p>
+                    <p className="text-slate-300 text-base fk-grotesk-light">{t.step3Sub}</p>
                   </div>
                   <div className="relative">
                     <div className="absolute -top-4 right-8 w-2 h-2 rounded-full sparkle" />
                     <div className="absolute top-2 right-16 w-1.5 h-1.5 rounded-full sparkle" style={{animationDelay: '0.6s'}} />
                     <div className="absolute -top-2 left-12 w-1 h-1 rounded-full sparkle" style={{animationDelay: '1.2s'}} />
-                    <YearSlider value={year} onChange={setYear} lang={uiLang} />
+                    <YearSlider value={year} onChange={handleYearChange} lang={uiLang} randomSelected={randYear != null} />
                   </div>
-                  <div className="text-center mt-8">
+                  <div className="text-center mt-2">
                     <button
+                      type="button"
+                      onClick={randomizeYear}
+                      className={`h-8 px-4 rounded-xl border text-slate-100 transition fk-grotesk-light ${randYear ? 'border-white/40 bg-white/30' : 'border-white/30 hover:bg-white/15'}`}
+                    >
+                      {t.randomYear}
+                    </button>
+                  </div>
+                  <div className="text-center mt-9">
+                    {hasInteracted && (
+                      <button
                       onClick={initiateCall}
                       disabled={!isValid || loading}
                     className={`btn-primary btn-liquid btn-reflect btn-impact h-12 px-8 disabled:opacity-50 disabled:cursor-not-allowed ${
@@ -254,21 +307,22 @@ export default function Home() {
                     >
                     {loading ? t.loadingText : t.callMe}
                     </button>
+                    )}
                     {message && (
-                      <div className="text-sm text-slate-200 mt-4">{message}</div>
+                      <div className="text-sm text-slate-200 mt-4 w-full text-center">{message}</div>
                     )}
                   </div>
                 </div>
               )}
 
               {/* Back Button */}
-              <div className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-12 ${countryOpen || loading ? 'opacity-0 pointer-events-none' : ''}` }>
+              <div className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-16 ${countryOpen || loading ? 'opacity-0 pointer-events-none' : ''}` }>
                 <button
                   onClick={() => {
                     setShowForm(false);
                     setCurrentStep(0);
                   }}
-                  className="text-xs text-slate-400 hover:text-slate-200 transition-colors"
+                  className="text-xs text-slate-400 hover:text-slate-200 transition-colors fk-grotesk-light"
                 >
                   {t.back}
                 </button>
@@ -277,9 +331,14 @@ export default function Home() {
           </div>
           {/* Global connecting overlay rendered outside steps so it appears while steps are hidden */}
           {loading && (
-            <div className="connecting-overlay">
-              <div className="connecting-card-enhanced fk-grotesk-thin">
-                <div className="era-year">{uiLang === 'es' ? `Alguien del año ${year} te está llamando…` : `Someone from the year ${year} is calling you…`}</div>
+            <div className="connecting-overlay asteroid-field">
+              {/* Floating asteroid particles for calling overlay */}
+              {Array.from({length: 25}).map((_, i) => (
+                <div key={i} className={`asteroid asteroid-${i + 1}`} />
+              ))}
+              
+              <div className="connecting-card-enhanced fk-grotesk-light relative z-10">
+                <div className="era-year">{uiLang === 'es' ? `Alguien del año ${callingYear ?? year} te está llamando…` : `Someone from the year ${callingYear ?? year} is calling you…`}</div>
                 <div className="subtitle">{t.overlaySubtitle}</div>
                 
                 <div className="liquid-phone-orb">
@@ -317,10 +376,41 @@ export default function Home() {
         </svg>
       </a>
       <section className="hero-continue min-h-[24vh] flex items-end justify-center pb-10 relative">
-        <div className="text-center text-sm md:text-base text-slate-200">
-          Powered by <a href="https://elevenlabs.io/" target="_blank" rel="noreferrer" className="font-semibold underline-offset-4 hover:underline">ElevenLabs</a>
+        <div className="text-center text-sm md:text-base text-slate-200 fk-grotesk-light">
+          <button 
+            onClick={() => setShowAbout(true)}
+            className="font-semibold underline-offset-4 hover:underline cursor-pointer mr-4"
+          >
+            {t.about}
+          </button>
+          · Powered by <a href="https://elevenlabs.io/" target="_blank" rel="noreferrer" className="font-semibold underline-offset-4 hover:underline">ElevenLabs</a>
         </div>
       </section>
+
+      {/* Mystical About Overlay */}
+      {showAbout && (
+        <div className="fixed inset-0 z-70 flex items-center justify-center p-4 asteroid-field" style={{background: 'rgba(0,0,0,0.7)'}}>
+          {/* Floating asteroid particles */}
+          {Array.from({length: 25}).map((_, i) => (
+            <div key={i} className={`asteroid asteroid-${i + 1}`} />
+          ))}
+          
+          <div className="about-modal fk-grotesk-light max-w-lg relative z-10">
+            <div className="text-center mb-4">
+              <h3 className="text-2xl font-semibold mb-2 text-white">{t.aboutTitle}</h3>
+            </div>
+            <p className="text-slate-200 leading-relaxed mb-6">{t.aboutContent}</p>
+            <div className="text-center">
+              <button 
+                onClick={() => setShowAbout(false)}
+                className="btn-primary btn-reflect h-10 px-6"
+              >
+                ✨ Close Portal
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
