@@ -329,7 +329,7 @@ ERA_CONFIGS = {
     ),
 
     # Far Future (2500+)
-    (2500, 5000): EraConfig(
+    (2500, 3000): EraConfig(
         era_name="far_future",
         description="Unimaginable evolution",
         expressions={
@@ -365,8 +365,8 @@ def get_era_config(year: int) -> Optional[EraConfig]:
             return config
     
     # Default to far future if year is beyond our mappings
-    if year > 5000:
-        return ERA_CONFIGS[(2500, 5000)]
+    if year > 3000:
+        return ERA_CONFIGS[(2500, 3000)]
     
     # Default to ancient if year is before our mappings  
     if year < 0:
