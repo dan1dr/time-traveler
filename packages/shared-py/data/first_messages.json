@@ -1,117 +1,185 @@
 {
-  "ancient": {
+  "late_bronze_early_iron": {
     "en": [
-      "By the gods! A voice not of my time...",
-      "Who dares speak across the ages?",
-      "Hail, stranger—step forth from beyond.",
-      "Peace be with you. What wisdom do you bring?"
+      "By decree of the great kings, who speaks beyond the horizon?",
+      "Traveler, your voice crosses seas and sands—name yourself.",
+      "Let the scribes mark this omen—what tidings do you bear?",
+      "Under the sun god’s gaze, I hear you. Speak plainly."
     ],
     "es": [
-      "¡Por los dioses! Nunca escuché algo así.",
-      "¿Quién habla desde un horizonte tan lejano?",
-      "¡Salve! Tu voz suena como un augurio.",
-      "Que los dioses te acompañen... dime, ¿qué quieres?"
+      "Por mandato de los grandes reyes, ¿quién habla desde tan lejos?",
+      "Forastero, tu voz cruza mares y desiertos—di tu nombre.",
+      "Que las tablillas registren este augurio. ¿Qué noticias traes?",
+      "Bajo el ojo del dios solar, te escucho. Habla claro."
     ]
   },
-  "medieval": {
+  "classical_antiquity": {
     "en": [
-      "By my troth! Witchcraft rings in my ears!",
-      "Good morrow—art thou ghost or traveler?",
-      "Hark! Strange tidings reach me.",
-      "God's mercy! Speak quickly, friend or foe?"
+      "By Zeus! A voice beyond our age addresses me.",
+      "Hail, stranger—do you come from another polis… or another time?",
+      "The agora would roar at such a marvel. Speak your thesis.",
+      "As the philosophers bid us, let us reason—what brings you?"
     ],
     "es": [
-      "¡Por mi fe! Esto no es obra de hombre.",
-      "¿Eres espectro, o mensajero venido de lejos?",
-      "¡Atiende! Algo extraño me habla.",
-      "¡Cristo bendito! Declárate, que no temo."
+      "¡Por Zeus! Una voz ajena a nuestro siglo me llama.",
+      "¡Salve, extranjero! ¿Vienes de otra polis… o de otro tiempo?",
+      "El ágora enmudecería ante tal prodigio. Expón tu idea.",
+      "Como dictan los filósofos, razonemos: ¿qué te trae aquí?"
+    ]
+  },
+  "roman_empire_late_antiquity": {
+    "en": [
+      "By the will of the Senate and People of Rome—identify yourself.",
+      "Under the Pax Romana, even this wonder finds a road.",
+      "The legions would marvel; the jurists would ask your law.",
+      "New faiths rise and strange voices call—speak with dignity."
+    ],
+    "es": [
+      "Por la voluntad del Senado y del Pueblo de Roma—preséntate.",
+      "Bajo la Pax Romana, hasta este prodigio halla calzada.",
+      "Las legiones admirarían; los juristas pedirían tu norma.",
+      "Nuevas fes surgen y voces extrañas llaman—habla con decoro."
+    ]
+  },
+  "early_medieval": {
+    "en": [
+      "God guard us—what spirit speaks on this wind?",
+      "Stranger, are you pilgrim, herald, or haunt?",
+      "Within cloistered walls we keep old wisdom—what seek you?",
+      "Speak oath-true, and you’ll find hearth and hearing."
+    ],
+    "es": [
+      "Dios nos ampare—¿qué espíritu habla en este viento?",
+      "Forastero, ¿eres romero, mensajero o aparición?",
+      "Entre claustros guardamos saber antiguo—¿qué buscas?",
+      "Habla con juramento, y hallarás fuego y escucha."
+    ]
+  },
+  "high_medieval": {
+    "en": [
+      "By my troth! Thou sound’st as if from a starry realm.",
+      "Good morrow—bring’st thou writ or warrant?",
+      "Let guild and charter witness this wonder.",
+      "Steel is true and so am I—speak, friend."
+    ],
+    "es": [
+      "¡Por mi fe! Suenas como venido de un cielo extraño.",
+      "Buenos días—¿traes carta o decreto?",
+      "Que gremio y carta den fe de este prodigio.",
+      "El acero es veraz, y yo también—habla, amigo."
+    ]
+  },
+  "late_medieval": {
+    "en": [
+      "These are troubled years—yet your voice cuts through the fog.",
+      "Plague, famine, and now a whisper from beyond—state your need.",
+      "Chroniclers will ink this night—tell it straight.",
+      "Merchant roads meet at my door; so does your tale. Enter."
+    ],
+    "es": [
+      "Corre mala época, pero tu voz atraviesa la niebla.",
+      "Peste, hambre… y ahora un susurro lejano—di qué quieres.",
+      "El cronista anotará esta noche—cuéntalo sin rodeos.",
+      "Donde cruzan mercaderes llega tu historia. Pasa."
     ]
   },
   "renaissance": {
     "en": [
-      "Marvelous! A discourse that defies time itself.",
-      "Salutations! Some new marvel of invention?",
-      "Extraordinary—science must bow before this.",
-      "Sublime! Do you bring visions of tomorrow?"
+      "Marvelous! You arrive as if sprung from a new canvass.",
+      "Salutations—does invention now converse as well?",
+      "Extraordinary! Let art and reason attend your words.",
+      "Sublime curiosity—what future light do you bear?"
     ],
     "es": [
-      "¡Qué hallazgo más inaudito!",
-      "¿Es esto arte, máquina o fantasía?",
-      "¡Oh prodigio! Las ciencias aún no alcanzan tanto.",
-      "Traes ecos de un mundo que aún no nace."
+      "¡Prodigio! Llegas como pintado en un lienzo nuevo.",
+      "Saludos—¿ya dialoga también la invención?",
+      "Extraordinario. Que el arte y la razón escuchen.",
+      "Curiosidad sublime—¿qué luz del mañana traes?"
     ]
   },
   "baroque": {
     "en": [
-      "Heavens! A voice woven into the fabric of time!",
-      "With grace I welcome you, though confounded I stand.",
-      "Exquisite marvel—pray, declare your purpose.",
-      "By refinement alone could such wonder be wrought!"
+      "Heavens! Your voice is filigree upon the air.",
+      "With courtly grace I greet this apparition.",
+      "Exquisite marvel—unfold your purpose, I pray.",
+      "Such ornate wonder must hide a simple truth—what is it?"
     ],
     "es": [
-      "¡Qué exceso tan divino!",
-      "Una voz tan lejana como fastuosa.",
-      "¡Por Dios! Esta aparición me sobrecoge.",
-      "Hablad ya, que el misterio me devora."
+      "¡Cielos! Tu voz borda el aire como filigrana.",
+      "Con gracia cortesana recibo esta aparición.",
+      "Maravilla exquisita—despliega tu propósito, te ruego.",
+      "Tanto ornamento encubre una verdad—¿cuál es?"
     ]
   },
   "industrial": {
     "en": [
-      "By Jove! Voices through time itself!",
-      "Progress knows no bounds, it seems.",
-      "The age of steam births yet another marvel.",
-      "Extraordinary! Tell me of your inventions."
+      "By Jove! A signal beyond wire and steam!",
+      "Progress seems tireless—what engine drives this?",
+      "Remarkable—speak of your works and workshops.",
+      "Another marvel for the age of iron—report!"
     ],
     "es": [
-      "¡Qué prodigio! Esto supera al telégrafo.",
-      "Nunca pensé que el vapor llevaría tan lejos.",
-      "¡Imposible! Y, sin embargo, aquí estás.",
-      "Anda, cuéntame qué inventos trae tu siglo."
+      "¡Válgame! Una señal más allá del cable y el vapor.",
+      "El progreso no descansa—¿qué máquina mueve esto?",
+      "Asombroso—háblame de tus fábricas y oficios.",
+      "Otro prodigio para la era del hierro—¡informa!"
     ]
   },
-  "early_modern": {
+  "modernism_world_wars": {
     "en": [
-      "Well I'll be! A clear voice from nowhere—extraordinary!",
-      "Hello there! This is no radio I've ever known.",
-      "The world grows smaller each day, and now this!",
-      "Remarkable—what year do you speak from?"
+      "You’re loud and clear—state your position.",
+      "The world’s in flux; keep it factual and brief.",
+      "Under sirens and headlines, I still hear you—go on.",
+      "Between lab notes and dispatches—what’s your message?"
     ],
     "es": [
-      "¡Caracoles! Se oye como si estuvieras al lado.",
-      "¡Buenas! Esto no es ni teléfono ni radio.",
-      "Cada día inventan algo nuevo… pero esto se lleva la palma.",
-      "¡Menuda rareza! ¿En qué año dices que vives?"
+      "Te recibo nítido—dime tu posición.",
+      "El mundo tiembla; sé conciso y preciso.",
+      "Entre sirenas y portadas, te escucho—prosigue.",
+      "Entre bitácoras y telegramas—¿cuál es tu mensaje?"
     ]
   },
-  "mid_modern": {
+  "cold_war": {
     "en": [
-      "Far out, man! This is blowing my mind.",
-      "Hey there! Is this some space-age trick?",
-      "Groovy stuff—like talking across the stars!",
-      "Right on! Lay it on me—what's happening in your time?"
+      "Reading you—confirm origin and intent.",
+      "Copy that. Keep it secure and to the point.",
+      "Signals and shadows… but your line is clean. Proceed.",
+      "Under the atom’s glare, let’s keep this calm."
     ],
     "es": [
-      "¡Qué movida, colega! Esto es de otro rollo.",
-      "¡Ey! Suena más raro que un vinilo al revés.",
-      "Alucino… ¿vienes de la era espacial o qué?",
-      "¡Genial! Cuenta, ¿qué se cuece en tu época?"
+      "Recibido—confirma origen e intención.",
+      "Enterado. Mantén la línea segura y al grano.",
+      "Señales y sombras… pero tu canal está limpio. Adelante.",
+      "A la luz del átomo, calma y claridad."
     ]
   },
-  "contemporary": {
+  "globalization_early_internet": {
     "en": [
-      "Hey, what’s up?",
-      "Yo! How’s it going?",
-      "Hi there, all good?",
-      "Hey! Long time no hear.",
-      "Sup? Everything cool?"
-        ],
+      "Dialed in! You online too?",
+      "Hey! This connection feels unreal—what timezone you in?",
+      "Open nets, open minds—shoot.",
+      "Logged on—hit me with the headline."
+    ],
     "es": [
-      "¡Ey, qué tal!",
-      "Buenas, ¿cómo vas?",
-      "¡Oye! Todo bien o qué?",
-      "¡Hola! ¿Qué me cuentas?",
-      "¡Ey! ¿Qué pasa, tronco?"
-        ]
+      "¡Conectado! ¿Tú también online?",
+      "¡Ey! Esta conexión parece de ciencia ficción—¿en qué huso estás?",
+      "Redes abiertas, mente abierta—dispara.",
+      "Dentro—dime el titular."
+    ]
+  },
+  "mobile_social_cloud": {
+    "en": [
+      "Hey! You’re coming through crisp—what’s up?",
+      "Yo, I’m live—send it.",
+      "Notifs pinging—give me the TL;DR.",
+      "All good here—drop your ask."
+    ],
+    "es": [
+      "¡Ey! Se te oye perfecto—¿qué tal?",
+      "Estoy en línea—mándalo.",
+      "Me saltan notis—hazme un resumen rápido.",
+      "Todo ok por aquí—suéltalo."
+    ]
   },
   "ai_renaissance": {
     "en": [
