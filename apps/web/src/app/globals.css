@@ -27,6 +27,12 @@ body {
   letter-spacing: -0.01em;
 }
 
+.fk-grotesk-thin {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-weight: 200;
+  letter-spacing: -0.005em;
+}
+
 .glass {
   background: rgba(18, 26, 42, 0.7);
   backdrop-filter: blur(10px);
@@ -92,8 +98,65 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(60% 40% at 50% 20%, rgba(0,0,0,0.18), transparent), linear-gradient(to bottom, rgba(0,0,0,0.15), rgba(0,0,0,0.35));
+  background: radial-gradient(60% 40% at 50% 20%, rgba(0,0,0,0.18), transparent),
+              linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.25) 78%, rgba(0,0,0,0.75) 92%, #000 100%);
   z-index: -1;
+}
+.crystal-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+.crystal-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.crystal-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(255,255,255,0.25), rgba(255,255,255,0.1));
+  border-radius: 9999px;
+  border: 2px solid rgba(255,255,255,0.1);
+}
+.crystal-panel {
+  background: linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.03));
+  border: 1px solid rgba(255,255,255,0.25);
+  backdrop-filter: blur(14px) saturate(160%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 8px 24px rgba(0,0,0,0.35);
+}
+
+/* Fixed hero backdrop that extends image below the fold and fades to black */
+.hero-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 140vh; /* extend past the first screen */
+  background: url('/images/hero.png') center/cover no-repeat;
+  filter: brightness(0.9) saturate(1.05);
+  z-index: -3;
+}
+.hero-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(60% 40% at 50% 20%, rgba(0,0,0,0.18), transparent),
+    linear-gradient(to bottom, rgba(0,0,0,0) 70%, #000 100%);
+}
+
+/* Footer: solid black with top fade that occludes the backdrop image */
+.hero-continue {
+  position: relative;
+  background: #000;
+  overflow: hidden;
+}
+.hero-continue::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0; height: 40vh;
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.85) 60%, #000 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+.hero-continue > * {
+  position: relative;
+  z-index: 1;
 }
 
 .sparkle {
@@ -131,6 +194,368 @@ body {
 .travel-machine-activating {
   animation: activateMachine 0.6s ease-in-out, energyPulse 1.5s ease-in-out infinite;
 }
+
+/* Liquid fill button animation */
+.btn-liquid {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.btn-liquid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 0%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.35), rgba(255,255,255,0.12));
+  backdrop-filter: blur(24px) saturate(200%);
+  transition: width 600ms cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: -1;
+}
+.btn-liquid.is-filling::before {
+  width: 100%;
+}
+
+/* Click impact animation before overlay appears */
+.btn-impact {
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1), filter 240ms ease;
+}
+.btn-impact.is-impacting {
+  transform: scale(0.98) rotate(1deg);
+  filter: blur(1px) saturate(130%);
+}
+
+/* Brief screen blur and fade when starting call */
+.pre-overlay-blur {
+  animation: preOverlayBlur 900ms ease forwards;
+}
+@keyframes preOverlayBlur {
+  0% { filter: blur(0px) brightness(1); }
+  60% { filter: blur(2.5px) brightness(0.96); }
+  100% { filter: blur(3px) brightness(0.94); }
+}
+
+/* Shimmer reflect on hover */
+.btn-reflect {
+  position: relative;
+  overflow: hidden;
+}
+.btn-reflect::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; left: -40%; width: 40%;
+  background: linear-gradient(110deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0) 100%);
+  transform: skewX(-20deg);
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+.btn-reflect:hover::after {
+  opacity: 1;
+  animation: sweep 900ms ease;
+}
+@keyframes sweep {
+  from { left: -40%; }
+  to { left: 140%; }
+}
+
+/* Spell-casting halo for the summon button */
+/* Removed pre-click halo spin around summon button */
+.spell-casting { position: static; }
+.spell-casting::after { display: none; }
+
+/* Enhanced connecting overlay with liquid effects */
+.connecting-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.55); /* stronger dim to hide underlying UI */
+  z-index: 60;
+  overflow: visible;
+  padding: 20px;
+}
+
+/* Liquid background flow */
+/* Remove moving background to avoid distractions */
+.connecting-overlay::before { display: none; }
+
+@keyframes liquidFlow {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.1); }
+}
+
+/* Floating liquid orbs */
+.liquid-orb {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  animation: float 15s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 61;
+}
+
+.liquid-orb-1 { 
+  width: 80px; height: 80px; 
+  top: 10%; left: 15%; 
+  animation-delay: 0s; 
+}
+.liquid-orb-2 { 
+  width: 120px; height: 120px; 
+  top: 70%; right: 20%; 
+  animation-delay: -5s; 
+}
+.liquid-orb-3 { 
+  width: 60px; height: 60px; 
+  bottom: 20%; left: 10%; 
+  animation-delay: -10s; 
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) translateX(0px) scale(1); opacity: 0.3; }
+  33% { transform: translateY(-30px) translateX(20px) scale(1.1); opacity: 0.6; }
+  66% { transform: translateY(20px) translateX(-15px) scale(0.9); opacity: 0.4; }
+}
+
+/* Floating data particles */
+.data-particle {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 10px;
+  animation: dataFlow 12s linear infinite;
+  pointer-events: none;
+  font-family: 'Courier New', monospace;
+  font-weight: 300;
+  z-index: 62;
+}
+
+.data-particle-1 { left: 20%; animation-delay: 0s; }
+.data-particle-2 { right: 25%; animation-delay: -3s; }
+.data-particle-3 { left: 30%; animation-delay: -6s; }
+.data-particle-4 { right: 15%; animation-delay: -9s; }
+
+@keyframes dataFlow {
+  0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+}
+
+/* Enhanced connecting card */
+.connecting-card-enhanced {
+  position: relative;
+  width: 420px;
+  max-width: calc(100vw - 40px);
+  max-height: calc(100vh - 40px);
+  padding: 36px 32px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(40px) saturate(180%);
+  border-radius: 32px;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.3),
+    0 8px 32px rgba(108, 99, 255, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+  text-align: center;
+  z-index: 70;
+  animation: cardAppear 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: visible;
+}
+
+/* Liquid highlight effect */
+/* Remove animated top shimmer bar */
+.connecting-card-enhanced::before { display: none; }
+
+@keyframes liquidShimmer {
+  0%, 100% { opacity: 0.5; transform: translateX(-100%); }
+  50% { opacity: 1; transform: translateX(100%); }
+}
+
+@keyframes cardAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    backdrop-filter: blur(40px);
+  }
+}
+
+/* Typography for enhanced card */
+.era-year {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
+  font-size: 22px;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  letter-spacing: -0.5px;
+  line-height: 1.3;
+}
+
+.subtitle {
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+  font-size: 15px;
+  margin-bottom: 24px;
+  line-height: 1.4;
+  font-weight: 300;
+}
+
+/* Central liquid glass orb */
+.liquid-phone-orb {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin: 24px auto;
+  border-radius: 50%;
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.25), transparent 60%),
+    radial-gradient(circle at 70% 70%, rgba(108, 99, 255, 0.2), transparent 60%),
+    radial-gradient(circle, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: orbBreathe 3s ease-in-out infinite;
+  box-shadow: 
+    0 10px 30px rgba(108, 99, 255, 0.15),
+    0 5px 15px rgba(255, 255, 255, 0.1),
+    inset 0 2px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 0 rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+/* Liquid ripple effect inside orb */
+.liquid-phone-orb::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.15) 0%, transparent 30%);
+  animation: liquidRipple 2s ease-in-out infinite;
+  border-radius: 50%;
+}
+
+@keyframes liquidRipple {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.2); opacity: 0.6; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes orbBreathe {
+  0%, 100% { 
+    transform: scale(1);
+    box-shadow: 
+      0 10px 30px rgba(108, 99, 255, 0.15),
+      0 5px 15px rgba(255, 255, 255, 0.1),
+      inset 0 2px 0 rgba(255, 255, 255, 0.2);
+  }
+  50% { 
+    transform: scale(1.02);
+    box-shadow: 
+      0 15px 40px rgba(108, 99, 255, 0.2),
+      0 8px 20px rgba(255, 255, 255, 0.15),
+      inset 0 2px 0 rgba(255, 255, 255, 0.3);
+  }
+}
+
+.phone-icon {
+  font-size: 42px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  z-index: 2;
+  animation: phoneRing 1.5s ease-in-out infinite;
+}
+
+@keyframes phoneRing {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+
+/* Progress indicator */
+.connection-progress {
+  margin: 20px auto 24px;
+  width: 200px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, 
+    rgba(255, 255, 255, 0.3) 0%, 
+    rgba(108, 99, 255, 0.5) 50%, 
+    rgba(255, 255, 255, 0.3) 100%);
+  border-radius: 20px;
+  animation: progressFlow 2s ease-in-out infinite;
+  box-shadow: 0 0 10px rgba(108, 99, 255, 0.3);
+}
+
+@keyframes progressFlow {
+  0% { width: 20%; }
+  50% { width: 80%; }
+  100% { width: 20%; }
+}
+
+/* Enhanced action button */
+.check-phone-btn {
+  width: 100%;
+  padding: 16px 24px;
+  border: none;
+  border-radius: 20px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  cursor: default;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(20px);
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.95);
+  box-shadow: 
+    0 8px 25px rgba(108, 99, 255, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Remove hover shimmer and lift */
+.check-phone-btn::before { display: none; }
+.check-phone-btn:hover { transform: none; box-shadow: 
+  0 8px 25px rgba(108, 99, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
+
+.status-text {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  margin-top: 16px;
+  font-weight: 300;
+}
+
+/* Legacy connecting card for backwards compatibility */
+.connecting-card {
+  border-radius: 20px;
+  padding: 24px 28px;
+  text-align: center;
+  color: white;
+  min-width: 300px;
+  max-width: 90vw;
+  background: linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.05));
+  border: 1px solid rgba(255,255,255,0.28);
+  backdrop-filter: blur(18px) saturate(170%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 20px 60px rgba(0,0,0,0.45);
+  animation: popIn 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
 .step-enter {
   opacity: 0;
@@ -212,6 +637,16 @@ body {
   transition: all 0.2s ease;
   backdrop-filter: blur(8px);
   border: none;
+}
+
+/* Reserve space for dynamic YearSlider header to prevent vertical shift */
+.year-header {
+  min-height: 7.5rem; /* ~120px */
+}
+
+/* Axis labels brighter and positioned below track */
+.axis-labels {
+  color: rgba(255,255,255,0.9);
 }
 
 

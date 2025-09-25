@@ -19,19 +19,17 @@ export function YearSlider({
   return (
     <div className="relative">
       {/* Centered Year Display with Zoom Animation */}
-      <div className="text-center mb-6">
+      <div className="text-center mb-6 year-header" style={{minHeight:'8.5rem'}}>
         <div className="text-sm uppercase tracking-wider text-slate-400 mb-1">Era</div>
-        <div className={`text-2xl font-semibold transition-all duration-300 fk-grotesk-light ${
-          isSliding ? 'transform scale-110 text-white' : 'transform scale-100'
-        }`}>
+        <div className={`text-2xl font-semibold transition-transform duration-300 fk-grotesk-light will-change-transform`}
+          style={{transform: isSliding ? 'scale(1.06)' : 'scale(1)'}}>
           {era.label}
         </div>
-        <div className="text-slate-400 text-sm mb-4">{era.range}</div>
+        <div className="text-slate-300 text-sm mb-4" style={{minHeight:'1.25rem'}}>{era.range}</div>
         
         {/* Year with zoom effect */}
-        <div className={`text-4xl font-bold transition-all duration-200 ${
-          isSliding ? 'transform scale-125 text-blue-200' : 'transform scale-100'
-        }`}>
+        <div className={`text-4xl font-bold transition-transform duration-200`}
+          style={{transform: isSliding ? 'scale(1.12)' : 'scale(1)'}}>
           {value}
         </div>
       </div>
@@ -39,18 +37,16 @@ export function YearSlider({
       {/* Crystal Slider Container */}
       <div className="relative px-4">
         {/* Elegant Axis Markers */}
-        <div className="absolute inset-x-4 top-0 flex justify-between text-xs text-slate-500 pointer-events-none">
+        <div className="absolute inset-x-4 -bottom-6 flex justify-between text-xs axis-labels pointer-events-none">
           <span className="transform -translate-x-2">0</span>
           <span className="transform -translate-x-3">1000</span>
           <span className="transform -translate-x-3">2000</span>
-          <span className="transform -translate-x-3">3000</span>
-          <span className="transform -translate-x-3">4000</span>
-          <span className="transform translate-x-2">5000+</span>
+          <span className="transform translate-x-2">3000</span>
         </div>
         
         {/* Axis ticks */}
         <div className="absolute inset-x-4 top-4 flex justify-between pointer-events-none">
-          {[0, 1000, 2000, 3000, 4000, 5000].map((tick) => (
+          {[0, 1000, 2000, 3000].map((tick) => (
             <div key={tick} className="w-px h-2 bg-slate-600"></div>
           ))}
         </div>
@@ -69,7 +65,7 @@ export function YearSlider({
           <input
             type="range"
             min={0}
-            max={5000}
+            max={3000}
             step={1}
             value={value}
             onChange={handleChange}
@@ -86,7 +82,13 @@ export function YearSlider({
       </div>
 
       {/* Era Description */}
-      <div className="mt-6 text-center text-sm text-slate-400 max-w-xs mx-auto">
+      <div className="mt-10 text-center text-sm text-slate-300 max-w-xs mx-auto" style={{
+        minHeight: '2.6rem',
+        display: '-webkit-box',
+        WebkitLineClamp: 2 as any,
+        WebkitBoxOrient: 'vertical' as any,
+        overflow: 'hidden'
+      }}>
         {era.description}
       </div>
     </div>
@@ -105,7 +107,7 @@ function getEraForYear(year: number) {
   if (year <= 2050) return { label: "AI Renaissance", range: "2030–2050", description: "Human–AI symbiosis—short, sharp insights." };
   if (year <= 2200) return { label: "Interplanetary", range: "2050–2200", description: "Multi-planetary—Martian colonies, orbital links." };
   if (year <= 2500) return { label: "Transcendent", range: "2200–2500", description: "Post-human perspectives—energy and information." };
-  return { label: "Far Future", range: "2500+", description: "Galactic consciousness—beyond linear time." };
+  return { label: "Far Future", range: "2500–3000", description: "Galactic consciousness—beyond linear time." };
 }
 
 
