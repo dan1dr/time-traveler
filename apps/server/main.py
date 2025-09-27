@@ -64,6 +64,10 @@ def get_twilio_client():
 async def root():
     return {"message": "Twilio-ElevenLabs Integration Server"}
 
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "message": "Server is running"}
+
 @app.post("/outbound-call")
 async def outbound_call(
     call_request: OutboundCallRequest,
