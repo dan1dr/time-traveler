@@ -62,28 +62,49 @@ curl -X POST https://YOUR_NGROK_URL/outbound-call \
 
 | Year Range | Era | Example Expression | Voice Speed |
 |------------|-----|-------------------|-------------|
-| 0-500 | Ancient Times | "By the gods!" | 0.9 (wisdom) |
-| 500-1500 | Medieval | "By my troth!" | 1.0 (normal) |
-| 1400-1600 | Renaissance | "What a marvel!" | 1.1 (artistic) |
-| 1600-1750 | Baroque | "Most gracious!" | 0.95 (refined) |
-| 1750-1900 | Industrial | "What progress!" | 1.15 (energetic) |
-| 1900-1950 | Early Modern | "What a time to be alive!" | 1.2 (fast-paced) |
-| 1950-2000 | Mid-Late 20th | "Far out, man!" | 1.2 (groovy) |
-| 2000-2030 | Contemporary | "Amazing how connected..." | 1.1 (quick) |
-| 2030-2050 | AI Renaissance | "Neural networks whisper..." | 1.0 (measured) |
-| 2050-2200 | Interplanetary | "By the rings of Saturn!" | 0.85 (cosmic) |
-| 2200-2500 | Transcendent | "Quantum foam of consciousness..." | 0.7 (ethereal) |
-| 2500+ | Far Future | "Symphony of galactic thoughts..." | 0.7 (profound) |
+| -1500 to -800 | Late Bronze-Early Iron | "By decree of great kings..." | 1.05 (ceremonial) |
+| -800 to 0 | Classical Antiquity | "By Zeus!" | 1.1 (oratory) |
+| 0 to 500 | Roman Empire | "By the will of the Senate..." | 1.05 (imperial) |
+| 500 to 1000 | Early Medieval | "God guard us on these roads..." | 0.98 (monastic) |
+| 1000 to 1300 | High Medieval | "By my troth!" | 1.0 (dignified) |
+| 1300 to 1400 | Late Medieval | "In these troubled years..." | 0.98 (reflective) |
+| 1400 to 1600 | Renaissance | "What a marvel of nature!" | 1.1 (artistic) |
+| 1600 to 1750 | Baroque | "Most gracious indeed!" | 1.0 (refined) |
+| 1750 to 1900 | Industrial | "What progress we have made!" | 1.15 (energetic) |
+| 1900 to 1945 | Modernism & World Wars | "The old world cracks..." | 1.08 (urgent) |
+| 1945 to 1991 | Cold War | "Across the wire, signals..." | 1.05 (tense) |
+| 1991 to 2008 | Globalization & Early Internet | "Dial in—we're logging on..." | 1.12 (optimistic) |
+| 2008 to 2030 | Mobile, Social & Cloud | "Push the update—everyone's here..." | 1.15 (fast-paced) |
+| 2030 to 2050 | AI Renaissance | "The neural networks whisper..." | 1.1 (precise) |
+| 2050 to 2200 | Interplanetary | "By the rings of Saturn!" | 1.0 (cosmic) |
+| 2200 to 2500 | Transcendent | "Through the quantum foam..." | 0.95 (ethereal) |
+| 2500 to 3000+ | Far Future | "In the symphony of galactic thoughts..." | 0.9 (profound) |
 
 ## 🔧 Configuration
 
 ### Environment Variables
+
+**Backend (`apps/server/.env`)**
 ```bash
-ELEVENLABS_API_KEY=your_key
-ELEVENLABS_AGENT_ID=your_agent_id
-TWILIO_ACCOUNT_SID=your_sid
-TWILIO_AUTH_TOKEN=your_token
-TWILIO_PHONE_NUMBER=your_number
+# ElevenLabs Configuration
+ELEVENLABS_API_KEY=sk_...
+ELEVENLABS_AGENT_ID_1=agent_...
+ELEVENLABS_AGENT_ID_2=agent_...  # Optional
+ELEVENLABS_AGENT_ID_3=agent_...  # Optional
+
+# Twilio Configuration
+TWILIO_ACCOUNT_SID=AC...
+TWILIO_AUTH_TOKEN=...
+TWILIO_PHONE_NUMBER=+1...
+
+# CORS and Debug
+ALLOWED_ORIGINS=http://localhost:3000,https://your-app.vercel.app
+DEBUG_LOGS=true
+```
+
+**Frontend (`apps/web/.env.local`)**
+```bash
+NEXT_PUBLIC_BACKEND_URL=https://your-railway-app.railway.app
 ```
 
 ### ElevenLabs Agent Setup
