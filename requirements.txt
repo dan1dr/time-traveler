@@ -1,0 +1,2 @@
+-e ./packages/shared_py
+-r apps/server/requirements.txt

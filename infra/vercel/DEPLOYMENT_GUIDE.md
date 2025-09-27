@@ -36,7 +36,7 @@ cd apps/server
 poetry export --format=requirements.txt --output=requirements.txt --without-hashes
 ```
 
-Or manually create `apps/server/requirements.txt`:
+The requirements.txt will include the shared_py package automatically. Or manually create `apps/server/requirements.txt`:
 ```txt
 fastapi==0.116.2
 uvicorn[standard]==0.35.0
@@ -45,6 +45,7 @@ twilio==9.8.0
 python-dotenv==1.1.1
 python-multipart==0.0.20
 starlette==0.48.0
+# Note: shared_py package will be installed via setup.py during deployment
 ```
 
 #### 1.2 Create `Procfile`
@@ -68,7 +69,7 @@ python-3.11
 3. **Select Repository**: Choose your `time-traveler` repository
 4. **Configure Build**:
    - **Root Directory**: `apps/server`
-   - **Build Command**: `pip install -r requirements.txt`
+   - **Build Command**: `pip install ../../packages/shared_py && pip install -r requirements.txt`
    - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
 
 5. **Environment Variables**: Add these in Railway dashboard:

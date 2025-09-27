@@ -17,13 +17,10 @@ from urllib.parse import quote
 from pydantic import BaseModel
 from era_config import get_era_session_variables
 
-# Add packages directory to Python path
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "packages", "shared-py"))
-
 # Import voice and agent managers
-from voice_manager import VoiceManager
-from agent_manager import AgentManager
-from first_message_manager import FirstMessageManager
+from shared_py.voice_manager import VoiceManager
+from shared_py.agent_manager import AgentManager
+from shared_py.first_message_manager import FirstMessageManager
 
 load_dotenv()
 
