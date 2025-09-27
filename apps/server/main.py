@@ -6,6 +6,7 @@ import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, WebSocket, Form, Depends, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from twilio.twiml.voice_response import VoiceResponse, Connect, Stream
 from twilio.rest import Client
 from elevenlabs import ElevenLabs
@@ -38,6 +39,21 @@ if not ELEVENLABS_API_KEY:
     raise ValueError("Missing required ElevenLabs environment variables")
 
 app = FastAPI(title="Twilio-ElevenLabs Integration Server")
+
+# CORS Configuration
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["*"],
+)
+
+# Debug logging for CORS
+if DEBUG_LOGS:
+    print(f"🔗 CORS configured for origins: {ALLOWED_ORIGINS}")
 
 # Initialize voice and agent managers globally
 voice_manager = VoiceManager()
