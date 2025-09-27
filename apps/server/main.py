@@ -28,7 +28,9 @@ load_dotenv()
 DEBUG_LOGS = os.getenv("DEBUG_LOGS", "false").lower() == "true"
 
 # Load environment variables
-ELEVENLABS_AGENT_ID = os.getenv("ELEVENLABS_AGENT_ID")
+ELEVENLABS_AGENT_ID_1 = os.getenv("ELEVENLABS_AGENT_ID_1")
+ELEVENLABS_AGENT_ID_2 = os.getenv("ELEVENLABS_AGENT_ID_2")
+ELEVENLABS_AGENT_ID_3 = os.getenv("ELEVENLABS_AGENT_ID_3")
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
@@ -217,7 +219,7 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                     
                     # Fallback to base agent if random selection fails
                     if not agent_id_to_use:
-                        agent_id_to_use = ELEVENLABS_AGENT_ID
+                        agent_id_to_use = ELEVENLABS_AGENT_ID_1
                         print(f"🔄 Using fallback base agent: {agent_id_to_use[:8]}...")
                     
                     print(f"🎯 Using agent ID: {agent_id_to_use[:8]}... ({selected_agent['name'] if selected_agent else 'fallback'})")
