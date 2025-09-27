@@ -1,6 +1,6 @@
-# Time Traveler - Vercel Deployment Guide
+# Time Traveler - Deployment Guide
 
-A comprehensive guide to deploy the Time Traveler project using Vercel for frontend and an external service for the Python backend.
+A comprehensive guide to deploy the Time Traveler project using Vercel for frontend and Railway for the Python backend.
 
 ## 🏗️ Architecture Overview
 

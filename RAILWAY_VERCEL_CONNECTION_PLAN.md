@@ -234,7 +234,7 @@ curl -X POST https://your-railway-app.railway.app/outbound-call \
 
 ### 8.2 Update Deployment Guide
 
-**File**: `infra/vercel/DEPLOYMENT_GUIDE.md`
+**File**: `infra/deployment/README.md`
 
 **Update with**:
 - CORS configuration steps

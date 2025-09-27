@@ -43,7 +43,7 @@ pnpm start
 
 For complete deployment instructions including both frontend (Vercel) and backend (Railway/Render), see the comprehensive deployment guide:
 
-📖 **[Complete Deployment Guide](../infra/vercel/DEPLOYMENT_GUIDE.md)**
+📖 **[Complete Deployment Guide](../infra/deployment/README.md)**
 
 ### Quick Vercel Deployment
 
