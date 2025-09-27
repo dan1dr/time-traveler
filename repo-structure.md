@@ -73,28 +73,28 @@ time-traveler/
 │     ├─ twilio_audio.py       # Twilio audio bridge & WebSocket handler
 │     ├─ era_config.py         # Era definitions and voice settings
 │     └─ pyproject.toml        # Server dependencies (Poetry)
-├─ packages/
-│  └─ shared-py/               # Python shared modules
-│     ├─ data/                 # JSON data files
-│     │  ├─ voices.json        # Voice IDs with gender/age metadata
-│     │  ├─ agents.json        # Agent personalities
-│     │  └─ first_messages.json # Era-specific greetings
-│     ├─ voice_manager.py      # Voice randomization logic
-│     ├─ agent_manager.py      # Agent randomization logic
-│     └─ first_message_manager.py # First message selection
+├─ apps/server/shared_py/       # Python shared modules
+│  ├─ data/                     # JSON data files
+│  │  ├─ voices.json            # Voice IDs with gender/age metadata
+│  │  ├─ agents.json            # Agent personalities
+│  │  └─ first_messages.json    # Era-specific greetings
+│  ├─ voice_manager.py          # Voice randomization logic
+│  ├─ agent_manager.py          # Agent randomization logic
+│  └─ first_message_manager.py  # First message selection
 ├─ tests/                      # Unit tests (pytest)
 │  ├─ test_voice_manager.py    # Voice manager tests
 │  ├─ test_agent_manager.py    # Agent manager tests
 │  ├─ test_era_config.py       # Era configuration tests
 │  └─ conftest.py              # Test fixtures and setup
 ├─ infra/
-│  ├─ vercel/                  # Vercel config/notes (UI)
-│  ├─ docker/                  # Dockerfiles/compose (optional)
-│  └─ twilio/                  # Number setup, Media Streams notes
+│  ├─ deployment/              # Deployment guides (Vercel + Railway)
+│  │  └─ README.md             # Complete deployment guide
+│  ├─ twilio/                  # Twilio setup and configuration
+│  │  └─ README.md             # Twilio voice setup guide
+│  └─ docker/                  # Dockerfiles/compose (optional)
 ├─ scripts/                    # Dev helpers (no app logic)
 ├─ pyproject.toml              # Root Poetry project for testing
 ├─ poetry.lock                 # Root dependency lock file
-├─ .env.example                # Documentation of all env vars across apps
 ├─ README.md
 └─ package.json                # JS workspaces root (web + shared-ts)
 ```
@@ -116,7 +116,7 @@ time-traveler/
   * `pyproject.toml` — Poetry dependencies for server.
   * **Env:** `apps/server/.env` (secrets, git-ignored).
 
-* **packages/shared-py/** — Python shared modules for voice/agent management.
+* **apps/server/shared_py/** — Python shared modules for voice/agent management.
 
   * `data/voices.json` — curated voice IDs by language with gender/age metadata.
   * `data/agents.json` — agent personalities for randomization.
@@ -132,9 +132,11 @@ time-traveler/
   * `test_era_config.py` — era mapping and configuration validation tests.
   * `conftest.py` — pytest fixtures and shared test setup.
 
-* **packages/shared-ts/** — TS helpers to consume JSON from web (future).
 
-* **infra/** — Deploy notes/configs (Vercel, Docker).
+* **infra/** — Deployment and platform configuration guides.
+  * `deployment/README.md` — Complete deployment guide for Vercel + Railway.
+  * `twilio/README.md` — Twilio voice setup, webhooks, and testing guide.
+  * `docker/` — Docker configuration (optional).
 
 * **scripts/** — Convenience scripts (start dev server + ngrok, sample curl).
 
@@ -155,12 +157,12 @@ time-traveler/
 
 **Backend (FastAPI)**
 
-* `POST /outbound-call` → Twilio `Calls.create(from, to, url=/outbound-call-twiml?year&lang&voice)`
-* `GET|POST /outbound-call-twiml` → TwiML `<Connect><Stream wss://.../outbound-media-stream>` (pass year/lang/voice as `<Parameter>`).
+* `POST /outbound-call` → Twilio `Calls.create(from, to, url=/outbound-call-twiml?year&lang)` (initiates outbound call)
+* `GET|POST /outbound-call-twiml` → TwiML `<Connect><Stream wss://.../outbound-media-stream>` (pass year/lang as `<Parameter>`)
 * `WS /outbound-media-stream` → Handle Twilio events:
 
-  * `start` — open ElevenLabs Conversation with session vars `{year, language, voice_id, era_hint}`.
-  * `media` — convert Twilio μ-law 8k → PCM16 16k (if needed), feed agent; send agent audio back as base64 `media`.
+  * `start` — open ElevenLabs Conversation with dynamic variables `{era_year, time_period, era_context, expressions, voice_gender, voice_age_range}`.
+  * `media` — convert Twilio μ-law 8k → PCM16 16k, feed agent; send agent audio back as base64 `media`.
   * `stop` — end session, cleanup.
 
 **Audio & Barge-in**
@@ -173,7 +175,7 @@ time-traveler/
 * Randomized Agent; barge-in enabled; short responses (≤3 sentences).
 * System prompt receives dynamic variables: era context, expressions, voice metadata for character consistency.
 * Features: Era-specific first messages, voice-character matching, conversation overrides.
-* Session vars per call: `{year, language, voice_id, voice_gender, voice_age_range, era_context, expressions, first_message}`.
+* Dynamic variables: `{era_year, time_period, era_name, era_context, language, language_name, expression_1, expression_2, expression_3, voice_gender, voice_age_range}`.
 
 **Security**
 
@@ -182,8 +184,8 @@ time-traveler/
 **Deployment**
 
 * Web → Vercel.
-* Server → small always-on host (Fly/Render/EC2) with public HTTPS (ngrok for dev).
-* Twilio number (voice capable) with Media Streams enabled.
+* Server → Railway with public HTTPS (ngrok for dev).
+* Twilio number (voice capable) with webhook configured to `/outbound-call`.
 
 ---
 
@@ -192,23 +194,23 @@ time-traveler/
 **Backend (`apps/server/.env`)**
 
 ```
-ELEVENLABS_API_KEY=
-ELEVENLABS_AGENT_ID_1=
-TWILIO_ACCOUNT_SID=
-TWILIO_AUTH_TOKEN=
-TWILIO_PHONE_NUMBER=+34...
-PUBLIC_BASE_URL=https://your-public-server
+ELEVENLABS_API_KEY=sk_...
+ELEVENLABS_AGENT_ID_1=agent_...
+ELEVENLABS_AGENT_ID_2=agent_...  # Optional
+ELEVENLABS_AGENT_ID_3=agent_...  # Optional
+TWILIO_ACCOUNT_SID=AC...
+TWILIO_AUTH_TOKEN=...
+TWILIO_PHONE_NUMBER=+1...
+ALLOWED_ORIGINS=http://localhost:3000,https://your-app.vercel.app
 DEBUG_LOGS=true
 ```
 
 **Frontend (`apps/web/.env.local`)**
 
 ```
-NEXT_PUBLIC_BACKEND_URL=https://your-public-server
+NEXT_PUBLIC_BACKEND_URL=https://your-railway-app.railway.app
 # (No secrets here)
 ```
-
-**Root (`.env.example`)** — documents all vars; do **not** commit real secrets.
 
 ---
 
@@ -219,12 +221,12 @@ NEXT_PUBLIC_BACKEND_URL=https://your-public-server
 cd apps/server
 poetry install
 poetry run uvicorn main:app --reload --port 8000
-ngrok http 8000   # copy HTTPS URL into apps/server/.env as PUBLIC_BASE_URL
+ngrok http 8000   # copy HTTPS URL for Twilio webhook configuration
 
-# Test a call (no UI yet)
-curl -X POST "$PUBLIC_BASE_URL/outbound-call" \
+# Test a call (replace with your ngrok URL)
+curl -X POST "https://your-ngrok-url.ngrok.io/outbound-call" \
   -H "Content-Type: application/json" \
-  -d '{"to":"+34XXXXXXXXX","year":1580,"lang":"es"}'
+  -d '{"to":"+1XXXXXXXXXX","year":1580,"lang":"es"}'
 
 # Run tests from root
 cd ../../  # back to root
@@ -237,13 +239,4 @@ pnpm i
 pnpm dev
 # set NEXT_PUBLIC_BACKEND_URL in apps/web/.env.local to your server URL
 ```
-
-
-## Conventions
-
-* **Era configuration** in `apps/server/era_config.py` as Python classes for type safety.
-* **Voice/agent data** in `packages/shared-py/data/` as JSON for easy management.
-* **Testing** from root using Poetry with `pytest` for comprehensive test coverage.
-* **Frontend never stores secrets** (only `NEXT_PUBLIC_*` vars).
-* Keep agent turns short to reduce latency; verify **barge-in** behavior.
 
