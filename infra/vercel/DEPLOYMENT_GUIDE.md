@@ -36,15 +36,18 @@ cd apps/server
 poetry export --format=requirements.txt --output=requirements.txt --without-hashes
 ```
 
-The requirements.txt will include the shared_py package automatically. Or manually create `apps/server/requirements.txt`:
+The requirements.txt will include the shared_py package automatically. The current `apps/server/requirements.txt` includes all necessary dependencies:
+
 ```txt
+# Core dependencies (auto-generated from pyproject.toml)
 fastapi==0.116.2
-uvicorn[standard]==0.35.0
-elevenlabs==2.15.0
-twilio==9.8.0
+uvicorn==0.35.0
+elevenlabs==2.16.0
+twilio==9.8.1
 python-dotenv==1.1.1
 python-multipart==0.0.20
 starlette==0.48.0
+# ... plus all other dependencies
 # Note: shared_py package will be installed via setup.py during deployment
 ```
 
@@ -74,11 +77,25 @@ python-3.11
 
 5. **Environment Variables**: Add these in Railway dashboard:
    ```
+   # ElevenLabs Configuration
    ELEVENLABS_API_KEY=your_elevenlabs_key
-   ELEVENLABS_AGENT_ID=your_agent_id
+   
+   # Required: At least one agent ID
+   ELEVENLABS_AGENT_ID_1=your_first_agent_id
+   
+   # Optional: Additional agents for randomization
+   ELEVENLABS_AGENT_ID_2=your_second_agent_id
+   ELEVENLABS_AGENT_ID_3=your_third_agent_id
+   
+   # Twilio Configuration
    TWILIO_ACCOUNT_SID=your_twilio_sid
    TWILIO_AUTH_TOKEN=your_twilio_token
    TWILIO_PHONE_NUMBER=your_twilio_number
+   
+   # CORS Configuration (optional)
+   ALLOWED_ORIGINS=https://your-app.vercel.app,https://your-app-git-dev.vercel.app
+   
+   # Debug
    DEBUG_LOGS=true
    ```
 
@@ -216,11 +233,26 @@ Create `apps/web/vercel.json` for advanced configuration:
 #### Backend `.env` template:
 ```bash
 # Copy to apps/server/.env (DO NOT COMMIT)
+
+# ElevenLabs Configuration
 ELEVENLABS_API_KEY=sk_...
-ELEVENLABS_AGENT_ID=agent_...
+
+# Required: At least one agent ID
+ELEVENLABS_AGENT_ID_1=agent_...
+
+# Optional: Additional agents for randomization
+ELEVENLABS_AGENT_ID_2=agent_...
+ELEVENLABS_AGENT_ID_3=agent_...
+
+# Twilio Configuration
 TWILIO_ACCOUNT_SID=AC...
 TWILIO_AUTH_TOKEN=...
 TWILIO_PHONE_NUMBER=+1...
+
+# CORS Configuration (optional)
+ALLOWED_ORIGINS=http://localhost:3000,https://your-app.vercel.app
+
+# Debug
 DEBUG_LOGS=true
 ```
 
@@ -306,38 +338,3 @@ app.add_middleware(
     allow_headers=["*"],
 )
 ```
-
-## 📈 Monitoring & Maintenance
-
-### Vercel Monitoring
-- View deployment status in dashboard
-- Check function logs for errors
-- Monitor bandwidth usage
-
-### Railway Monitoring
-- View application logs
-- Monitor resource usage
-- Set up uptime monitoring
-
-### Regular Maintenance
-- Update dependencies monthly
-- Monitor API rate limits (ElevenLabs, Twilio)
-- Review error logs weekly
-- Test deployment pipeline monthly
-
----
-
-## 🎯 Quick Start Checklist
-
-- [ ] Backend: Create `requirements.txt`, `Procfile`, `runtime.txt`
-- [ ] Backend: Deploy to Railway with environment variables
-- [ ] Backend: Test API endpoints work
-- [ ] Frontend: Connect repository to Vercel
-- [ ] Frontend: Configure build settings for `apps/web`
-- [ ] Frontend: Set environment variables per environment
-- [ ] Frontend: Test preview deployment
-- [ ] Integration: Test full call flow on preview
-- [ ] Production: Promote to main branch
-- [ ] Monitoring: Set up error tracking and uptime monitoring
-
-For questions or issues, check the troubleshooting section or create an issue in the repository.
