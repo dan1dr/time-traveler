@@ -9,9 +9,5 @@ description = "Shared utilities and data for time-traveler"
 authors = [{ name = "danidr1" }]
 requires-python = ">=3.11"
 
-[tool.setuptools]
-packages = ["shared_py"]
-include-package-data = true
-
-[tool.setuptools.package-data]
-shared_py = ["data/*.json"]
+[tool.setuptools.packages.find]
+where = ["."]
