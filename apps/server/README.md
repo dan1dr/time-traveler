@@ -237,6 +237,8 @@ The system automatically passes these variables to your ElevenLabs agent, allowi
 3. **Era Configuration**: System maps year to historical era and applies appropriate settings
 4. **Fallback**: If JSON files are empty, falls back to environment variables
 
+**💡 For technical implementation details**, see [SIMPLIFIED-RANDOMIZATION.md](SIMPLIFIED-RANDOMIZATION.md)
+
 ## Example Usage Scenarios
 
 ### Medieval Knight (1350, English)
