@@ -6,6 +6,7 @@ import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, WebSocket, Form, Depends, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from twilio.twiml.voice_response import VoiceResponse, Connect, Stream
 from twilio.rest import Client
 from elevenlabs import ElevenLabs
@@ -17,13 +18,10 @@ from urllib.parse import quote
 from pydantic import BaseModel
 from era_config import get_era_session_variables
 
-# Add packages directory to Python path
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "packages", "shared-py"))
-
 # Import voice and agent managers
-from voice_manager import VoiceManager
-from agent_manager import AgentManager
-from first_message_manager import FirstMessageManager
+from shared_py.voice_manager import VoiceManager
+from shared_py.agent_manager import AgentManager
+from shared_py.first_message_manager import FirstMessageManager
 
 load_dotenv()
 
@@ -41,6 +39,21 @@ if not ELEVENLABS_API_KEY:
     raise ValueError("Missing required ElevenLabs environment variables")
 
 app = FastAPI(title="Twilio-ElevenLabs Integration Server")
+
+# CORS Configuration
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["*"],
+)
+
+# Debug logging for CORS
+if DEBUG_LOGS:
+    print(f"🔗 CORS configured for origins: {ALLOWED_ORIGINS}")
 
 # Initialize voice and agent managers globally
 voice_manager = VoiceManager()
@@ -66,6 +79,10 @@ def get_twilio_client():
 @app.get("/")
 async def root():
     return {"message": "Twilio-ElevenLabs Integration Server"}
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "message": "Server is running"}
 
 @app.post("/outbound-call")
 async def outbound_call(

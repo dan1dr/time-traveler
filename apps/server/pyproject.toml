@@ -12,11 +12,12 @@ elevenlabs = "^2.15.0"
 python-dotenv = "^1.1.1"
 ffmpeg = "^1.4"
 locust = "^2.40.4"
-fastapi = "^0.116.2"
+fastapi = {version = "0.116.2", extras = ["all"]}
 uvicorn = "^0.35.0"
 twilio = "^9.8.0"
 python-multipart = "^0.0.20"
 starlette = "^0.48.0"
+shared-py = {path = "./shared_py", develop = true}
 
 
 [tool.poetry.group.dev.dependencies]
