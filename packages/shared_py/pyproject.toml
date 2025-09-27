@@ -11,3 +11,7 @@ requires-python = ">=3.11"
 
 [tool.setuptools.packages.find]
 where = ["."]
+include = ["shared_py*"]
+
+[tool.setuptools.package-data]
+shared_py = ["data/*.json"]
