@@ -1,0 +1,16 @@
+{
+  "agents": [
+    {
+      "name": "Gemini Flash 2.0",
+      "env_var": "ELEVENLABS_AGENT_ID_1"
+    },
+    {
+      "name": "Claude Haiku 3", 
+      "env_var": "ELEVENLABS_AGENT_ID_2"
+    },
+    {
+      "name": "GPT5 nano",
+      "env_var": "ELEVENLABS_AGENT_ID_3"
+    }
+  ]
+}
