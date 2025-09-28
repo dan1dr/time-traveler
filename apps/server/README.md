@@ -2,6 +2,22 @@
 
 This guide explains how to configure and customize ElevenLabs agents for the Time Traveler voice application, including era-specific personality and voice settings.
 
+## 🏗️ Current Server Structure
+
+```
+apps/server/
+├── main.py              # API endpoints & orchestration
+├── auth.py              # JWT authentication & user management  
+├── rate_limiting.py     # Rate limiting logic & storage
+├── twilio_audio.py      # Twilio audio handling
+├── era_config.py        # Era definitions and voice settings
+├── errors.py            # Error handling
+└── shared_py/           # Shared modules
+    ├── voice_manager.py
+    ├── agent_manager.py
+    └── first_message_manager.py
+```
+
 ## How It Works
 
 The system uses **3 configuration files** to manage agents and voices:
@@ -281,8 +297,22 @@ The system automatically passes these variables to your ElevenLabs agent, allowi
 ```
 **Result**: Agent speaks like someone from the AI Renaissance with expressions about neural networks and human-AI collaboration.
 
-## Testing
+## 🧪 Testing
 
+### Unit Tests
+Run the comprehensive test suite:
+```bash
+# Run all tests
+poetry run pytest tests/ -v
+
+# Run specific test modules
+poetry run pytest tests/test_rate_limiting.py -v
+poetry run pytest tests/test_era_config.py -v
+poetry run pytest tests/test_agent_manager.py -v
+poetry run pytest tests/test_voice_manager.py -v
+```
+
+### Integration Testing
 Make test calls with different years and check logs for:
 ```
 🤖 Selected random agent: Time Traveler - Scholar
@@ -291,6 +321,14 @@ Make test calls with different years and check logs for:
 📅 Era: High Middle Ages (1350) - feudal order, chivalry, scholasticism
 🗣️ Expressions: "By my troth!", "The cathedral spires reach toward heaven..."
 ```
+
+### Test Coverage
+The project includes 49 unit tests covering:
+- ✅ Rate limiting logic and dependencies
+- ✅ Era configuration and mapping
+- ✅ Agent and voice management
+- ✅ Authentication and JWT handling
+- ✅ Error handling and edge cases
 
 ## Quick Setup Checklist
 
@@ -302,3 +340,4 @@ Make test calls with different years and check logs for:
 - [ ] Test with multiple calls to verify randomization
 - [ ] Test different years to verify era configuration
 - [ ] Test both English and Spanish to verify language support
+```

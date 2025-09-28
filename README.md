@@ -21,11 +21,13 @@ An AI-powered time traveler that calls you from any historical era! Using Eleven
 
 ### 🏗️ Architecture Highlights
 - **Modular Design**: Clean separation between server logic, shared modules, and tests
+- **JWT Authentication**: Secure token-based authentication with configurable expiration
+- **Rate Limiting**: Built-in sliding window rate limiting (5 calls/5min per token)
 - **Type Safety**: Python dataclasses for era configuration with validation  
 - **Randomization**: Language-based voice selection + personality-based agent selection
 - **Character Consistency**: Voice metadata ensures character-voice alignment
 - **Immersive Experience**: Era-specific first messages and voice settings
-- **Testing**: 37 unit tests covering all core logic with 100% coverage of critical paths
+- **Testing**: 49 unit tests covering all core logic with comprehensive coverage
 - **Poetry Management**: Root-level dependency management for easy testing and CI/CD
 
 ## ✨ Features
@@ -34,6 +36,55 @@ An AI-powered time traveler that calls you from any historical era! Using Eleven
 - **🧠 Dynamic Context**: ElevenLabs agents receive era-specific prompts and expressions
 - **🔧 JSON API**: Simple REST API for initiating calls with `{to, lang, year}` parameters
 - **🔐 JWT Authentication**: Secure token-based authentication for all API endpoints
+- **⚡ Rate Limiting**: Built-in protection against abuse with configurable limits
+- **📊 Status Monitoring**: Real-time rate limit status and call monitoring endpoints
+
+## 🔄 How It Works
+
+The system delivers an **outbound voice experience**: a visitor submits a form (phone, language, year) and immediately receives a call. On pickup, a **live ElevenLabs Agent** converses naturally with era-flavored style.
+
+### Complete Call Flow
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant UI as Your UI (form/button)
+  participant API as FastAPI Server
+  participant Twilio as Twilio Voice (PSTN)
+  participant WS as /outbound-media-stream (WebSocket)
+  participant EL as ElevenLabs Conversation
+
+  UI->>API: POST /outbound-call (to=+34...)
+  API->>Twilio: REST calls.create(from, to, url=/outbound-call-twiml)
+  Note right of Twilio: Places the phone call to the user
+
+  Twilio->>API: GET/POST /outbound-call-twiml
+  API-->>Twilio: TwiML Connect Stream url
+
+  Twilio->>WS: WebSocket CONNECT
+  WS-->>Twilio: 101 Switching Protocols
+
+  Twilio->>WS: event start with streamSid and callSid
+  WS->>EL: conversation.start_session(audio_interface)
+
+  loop Realtime audio (caller to agent)
+    Twilio->>WS: event media with base64 payload
+    WS->>WS: decode and resample audio
+    WS->>EL: input_callback(PCM16 16k)
+    EL-->>WS: agent computes reply
+  end
+
+  loop Realtime audio (agent to caller)
+    EL-->>WS: output(PCM16 16k)
+    WS->>WS: base64 encode
+    WS-->>Twilio: event media with payload
+    Note right of Twilio: Plays audio to the caller
+  end
+
+  Twilio->>WS: event stop
+  WS->>EL: end_session and cleanup
+  WS-->>Twilio: socket closes
+```
 
 ## 🚀 Quick Start
 
@@ -174,12 +225,122 @@ The API includes built-in rate limiting to prevent abuse:
 - **Status Endpoint**: Check current rate limit status with `GET /rate-limit/status`
 - **Error Response**: Returns HTTP 429 with detailed rate limit information when exceeded
 
+## 📡 API Endpoints
+
+### Authentication
+- `POST /auth/login` - Get JWT token
+- `POST /auth/refresh` - Refresh existing token
+- `GET /auth/verify` - Verify token validity
+
+### Core Functionality
+- `POST /outbound-call` - Initiate time traveler call (requires auth)
+- `GET /outbound-call-twiml` - TwiML for Twilio webhook
+- `WS /outbound-media-stream` - WebSocket for real-time audio
+
+### Monitoring & Status
+- `GET /rate-limit/status` - Check current rate limit status (requires auth)
+- `GET /call-status/{callSid}` - Get call status (requires auth)
+- `POST /end-call/{callSid}` - End active call (requires auth)
+- `GET /config` - Get server configuration
+- `GET /health` - Health check endpoint
+
 ## 📁 Project Structure
 
-- **`apps/server/`** - FastAPI backend with era logic
-- **`apps/server/era_config.py`** - Era definitions and voice settings
-- **`apps/server/main.py`** - API endpoints and conversation handling
-- **`apps/server/twilio_audio.py`** - Audio interface for Twilio Media Streams
+### Complete Repository Layout
+
+```
+time-traveler/
+├─ apps/
+│  ├─ web/                      # Next.js (Vercel) UI
+│  │  ├─ src/app/              # Next.js app directory
+│  │  ├─ src/components/        # React components
+│  │  └─ package.json          # Frontend dependencies
+│  └─ server/                   # FastAPI backend with modular architecture
+│     ├─ main.py               # API endpoints & orchestration
+│     ├─ auth.py               # JWT authentication & user management
+│     ├─ rate_limiting.py      # Rate limiting logic & storage
+│     ├─ twilio_audio.py       # Twilio audio bridge & WebSocket handler
+│     ├─ era_config.py         # Era definitions and voice settings
+│     ├─ errors.py             # Error handling
+│     └─ pyproject.toml        # Server dependencies (Poetry)
+├─ apps/server/shared_py/       # Python shared modules
+│  ├─ data/                     # JSON data files
+│  │  ├─ voices.json            # Voice IDs with gender/age metadata
+│  │  ├─ agents.json            # Agent personalities
+│  │  └─ first_messages.json    # Era-specific greetings
+│  ├─ voice_manager.py          # Voice randomization logic
+│  ├─ agent_manager.py          # Agent randomization logic
+│  └─ first_message_manager.py  # First message selection
+├─ tests/                      # Unit tests (pytest)
+│  ├─ test_voice_manager.py    # Voice manager tests
+│  ├─ test_agent_manager.py    # Agent manager tests
+│  ├─ test_era_config.py       # Era configuration tests
+│  ├─ test_rate_limiting.py    # Rate limiting tests
+│  └─ conftest.py              # Test fixtures and setup
+├─ infra/
+│  ├─ deployment/              # Deployment guides (Vercel + Railway)
+│  │  └─ README.md             # Complete deployment guide
+│  ├─ twilio/                  # Twilio setup and configuration
+│  │  └─ README.md             # Twilio voice setup guide
+│  └─ docker/                  # Dockerfiles/compose (optional)
+├─ scripts/                    # Dev helpers (no app logic)
+├─ pyproject.toml              # Root Poetry project for testing
+├─ poetry.lock                 # Root dependency lock file
+├─ README.md                   # This file
+└─ package.json                # JS workspaces root (web + shared-ts)
+```
+
+### Backend Architecture
+The server follows a **modular architecture** for maintainability and scalability:
+
+```
+apps/server/
+├── main.py              # API endpoints & orchestration
+├── auth.py              # JWT authentication & user management
+├── rate_limiting.py     # Rate limiting logic & storage
+├── twilio_audio.py      # Audio interface for Twilio Media Streams
+├── era_config.py        # Era definitions and voice settings
+├── errors.py            # Error handling
+└── shared_py/           # Shared modules
+    ├── voice_manager.py
+    ├── agent_manager.py
+    └── first_message_manager.py
+```
+
+### Module Responsibilities
+- **`main.py`** - API endpoint definitions, request/response handling, business logic orchestration
+- **`auth.py`** - JWT token creation/validation, user authentication, session management
+- **`rate_limiting.py`** - Rate limit checking/enforcement, token-based limiting, memory management
+- **`twilio_audio.py`** - Twilio Media Streams integration, audio conversion
+- **`era_config.py`** - Historical era definitions, voice settings, expressions
+- **`shared_py/`** - Reusable modules for voice/agent management and randomization
+
+### Architecture Benefits
+
+The modular design provides several advantages:
+
+- **✅ Single Responsibility**: Each module has one clear purpose
+- **✅ Testability**: Modules can be tested independently with focused unit tests
+- **✅ Reusability**: Auth and rate limiting modules can be used by other services
+- **✅ Maintainability**: Changes to one module don't affect others
+- **✅ Scalability**: Modules can be moved to separate services as the project grows
+
+### Testing Philosophy
+
+Each module can be tested independently with focused unit tests:
+
+```python
+# Test auth module
+from auth import create_jwt_token, validate_jwt_token
+
+# Test rate limiting module  
+from rate_limiting import check_rate_limit, get_rate_limit_config
+
+# Test era configuration
+from era_config import get_era_config, get_era_session_variables
+```
+
+The project includes **49 unit tests** covering all core logic with comprehensive coverage of edge cases and error conditions.
 
 ## 🎯 Example Conversations
 
@@ -191,5 +352,13 @@ The API includes built-in rate limiting to prevent abuse:
 
 **AI Renaissance (2035, English):**
 > "The neural networks whisper such wisdom... My AI companion suggests we consider how your primitive devices evolved into our symbiotic consciousness."
+
+## 🚀 Future Improvements
+
+1. **Dependency Injection**: Use FastAPI's dependency injection more extensively
+2. **Configuration Management**: Centralized config with validation
+3. **Database Layer**: Separate data access layer
+4. **Service Layer**: Business logic in dedicated services
+5. **API Versioning**: Separate modules for different API versions
 
 Built with ❤️ using ElevenLabs, Twilio, and FastAPI.
