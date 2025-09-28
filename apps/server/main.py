@@ -5,8 +5,10 @@ import traceback
 import uvicorn
 import base64
 import logging
+import secrets
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request, WebSocket, Form, Depends, HTTPException
+from fastapi import FastAPI, Request, WebSocket, Form, Depends, HTTPException, Header
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from twilio.twiml.voice_response import VoiceResponse, Connect, Stream
@@ -19,6 +21,7 @@ from twilio_audio import TwilioAudioInterface
 from starlette.websockets import WebSocketDisconnect, WebSocketState
 from urllib.parse import quote
 from pydantic import BaseModel, validator
+import jwt
 from era_config import get_era_session_variables
 from errors import (
     TimeTravelerError, PhoneNumberError, TwilioServiceError, 
@@ -44,9 +47,48 @@ TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
 
+# JWT Configuration
+JWT_SECRET = os.getenv("JWT_SECRET", secrets.token_urlsafe(32))
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRATION_HOURS = int(os.getenv("JWT_EXPIRATION_HOURS", "1"))  # 1 hour default
+
 # Check for required environment variables
 if not ELEVENLABS_API_KEY:
     raise ValueError("Missing required ElevenLabs environment variables")
+
+# JWT Helper Functions
+def create_jwt_token(user_id: str = "demo-user", session_id: str = None) -> str:
+    """Create a JWT token for authentication"""
+    if not session_id:
+        session_id = secrets.token_urlsafe(16)
+    
+    payload = {
+        "user_id": user_id,
+        "session_id": session_id,
+        "exp": datetime.utcnow() + timedelta(hours=JWT_EXPIRATION_HOURS),
+        "iat": datetime.utcnow(),
+        "iss": "time-traveler-api"
+    }
+    
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+def validate_jwt_token(token: str) -> dict:
+    """Validate a JWT token and return payload if valid"""
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+def get_current_user(authorization: str = Header(None)) -> dict:
+    """Dependency to get current user from JWT token"""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Authorization header required")
+    
+    token = authorization.split(" ")[1]
+    return validate_jwt_token(token)
 
 app = FastAPI(title="Twilio-ElevenLabs Integration Server")
 
@@ -141,11 +183,49 @@ async def root():
 async def health_check():
     return {"status": "healthy", "message": "Server is running"}
 
+# Authentication Endpoints
+@app.post("/auth/login")
+async def login():
+    """Generate a JWT token for API access"""
+    token = create_jwt_token()
+    return {
+        "success": True,
+        "token": token,
+        "expires_in": JWT_EXPIRATION_HOURS * 3600,  # seconds
+        "message": "Token generated successfully"
+    }
+
+@app.post("/auth/refresh")
+async def refresh_token(current_user: dict = Depends(get_current_user)):
+    """Refresh an existing JWT token"""
+    new_token = create_jwt_token(
+        user_id=current_user["user_id"],
+        session_id=current_user["session_id"]
+    )
+    return {
+        "success": True,
+        "token": new_token,
+        "expires_in": JWT_EXPIRATION_HOURS * 3600,
+        "message": "Token refreshed successfully"
+    }
+
+@app.get("/auth/verify")
+async def verify_token(current_user: dict = Depends(get_current_user)):
+    """Verify if current token is valid"""
+    return {
+        "success": True,
+        "user_id": current_user["user_id"],
+        "session_id": current_user["session_id"],
+        "expires_at": current_user["exp"],
+        "message": "Token is valid"
+    }
+
 @app.post("/outbound-call")
 async def outbound_call(
     call_request: OutboundCallRequest,
     request: Request = None,
-    twilio_client: Client = Depends(get_twilio_client)
+    twilio_client: Client = Depends(get_twilio_client),
+    current_user: dict = Depends(get_current_user)
 ):
     try:
         # Check configuration
@@ -543,7 +623,7 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                 print(f"Error in conversation cleanup: {str(e)}")
 
 @app.get("/call-status/{call_sid}")
-async def get_call_status(call_sid: str):
+async def get_call_status(call_sid: str, current_user: dict = Depends(get_current_user)):
     if DEBUG_LOGS:
         print(f"📊 Status check for call: {call_sid}")
     status = CALL_STATUS.get(call_sid)
@@ -552,7 +632,7 @@ async def get_call_status(call_sid: str):
     return JSONResponse({"success": True, "status": status.get("status"), "details": status})
 
 @app.post("/end-call/{call_sid}")
-async def end_call(call_sid: str, request: Request = None, twilio_client: Client = Depends(get_twilio_client)):
+async def end_call(call_sid: str, request: Request = None, twilio_client: Client = Depends(get_twilio_client), current_user: dict = Depends(get_current_user)):
     try:
         reason = request.query_params.get("reason") if request else None
         # Attempt to complete the call via Twilio
