@@ -35,7 +35,9 @@ class TestAgentManager:
         assert agent is not None
         assert 'name' in agent
         assert 'env_var' in agent
-        assert agent['name'].startswith('Time Traveler')
+        # Check that the agent name is one of the expected names from agents.json
+        expected_names = ["Gemini Flash 2.0", "Claude Haiku 3", "GPT5 nano"]
+        assert agent['name'] in expected_names
 
     def test_randomization_distribution(self, agent_manager):
         """Test that agent randomization has reasonable distribution."""
@@ -62,7 +64,7 @@ class TestAgentManager:
         """Test getting agent ID when environment variable is missing."""
         test_agent = {"name": "Test Agent", "env_var": "MISSING_AGENT_ID"}
         
-        with patch.dict('os.environ', {'ELEVENLABS_AGENT_ID': 'fallback_agent'}, clear=True):
+        with patch.dict('os.environ', {'ELEVENLABS_AGENT_ID_1': 'fallback_agent'}, clear=True):
             agent_id = agent_manager.get_agent_id(test_agent)
             assert agent_id == 'fallback_agent'
 
@@ -73,36 +75,8 @@ class TestAgentManager:
         agent_id = agent_manager.get_agent_id(test_agent)
         assert agent_id is None
 
-    def test_get_available_agent_ids(self, agent_manager):
-        """Test getting all available agent IDs from environment."""
-        env_vars = {
-            'ELEVENLABS_AGENT_ID': 'base_agent',
-            'ELEVENLABS_AGENT_ID_ALT_1': 'scholar_agent',
-            'ELEVENLABS_AGENT_ID_ALT_2': 'adventurer_agent'
-        }
-        
-        with patch.dict('os.environ', env_vars):
-            agent_ids = agent_manager.get_available_agent_ids()
-            # Should include all configured agents
-            assert len(agent_ids) >= 3
-            assert 'base_agent' in agent_ids
-
-    def test_get_random_agent_id(self, agent_manager):
-        """Test random agent ID selection from environment."""
-        env_vars = {
-            'ELEVENLABS_AGENT_ID': 'base_agent',
-            'ELEVENLABS_AGENT_ID_ALT_1': 'scholar_agent'
-        }
-        
-        with patch.dict('os.environ', env_vars):
-            agent_id = agent_manager.get_random_agent_id()
-            assert agent_id in ['base_agent', 'scholar_agent']
-
-    def test_get_random_agent_id_no_env_vars(self, agent_manager):
-        """Test random agent ID when no environment variables are set."""
-        with patch.dict('os.environ', {}, clear=True):
-            agent_id = agent_manager.get_random_agent_id()
-            assert agent_id is None
+    # Note: get_available_agent_ids and get_random_agent_id methods don't exist in current implementation
+    # These tests are removed to match the actual AgentManager interface
 
     def test_custom_agents_file(self, sample_agent_data):
         """Test AgentManager with custom agents file."""

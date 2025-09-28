@@ -28,24 +28,23 @@ class TestEraConfig:
         # Test a few known eras
         medieval = get_era_config(1000)
         assert medieval is not None
-        assert medieval.era_name == "medieval"
+        assert medieval.era_name == "early_medieval"
         
         renaissance = get_era_config(1500)
         assert renaissance is not None
-        # 1500 is actually on the boundary between medieval (500-1500) and renaissance (1400-1600)
-        # Medieval takes precedence since it's first in the loop, so expect medieval
-        assert renaissance.era_name == "medieval"
+        # 1500 is actually in the renaissance era (1400-1600)
+        assert renaissance.era_name == "renaissance"
         
         contemporary = get_era_config(2020)
         assert contemporary is not None
-        assert contemporary.era_name == "contemporary"
+        assert contemporary.era_name == "mobile_social_cloud"
 
     def test_get_era_config_edge_cases(self):
         """Test era config for edge cases."""
-        # Very old year - should default to ancient
+        # Very old year - should default to late_bronze_early_iron
         ancient = get_era_config(-1000)
         assert ancient is not None
-        assert ancient.era_name == "ancient"
+        assert ancient.era_name == "late_bronze_early_iron"
         
         # Very far future - should default to far_future
         far_future = get_era_config(10000)
@@ -55,17 +54,17 @@ class TestEraConfig:
     def test_get_era_config_boundary_years(self):
         """Test era config at year boundaries."""
         # Test some specific boundary years that should work clearly
-        ancient = get_era_config(0)  # Start of ancient era
-        assert ancient.era_name == "ancient"
+        ancient = get_era_config(0)  # Start of classical antiquity era
+        assert ancient.era_name == "classical_antiquity"
         
-        medieval_mid = get_era_config(1000)  # Clearly in medieval
-        assert medieval_mid.era_name == "medieval"
+        medieval_mid = get_era_config(1000)  # Clearly in early_medieval
+        assert medieval_mid.era_name == "early_medieval"
         
         renaissance_mid = get_era_config(1550)  # Clearly in renaissance  
         assert renaissance_mid.era_name == "renaissance"
         
-        contemporary = get_era_config(2010)  # Clearly contemporary
-        assert contemporary.era_name == "contemporary"
+        contemporary = get_era_config(2010)  # Clearly mobile_social_cloud
+        assert contemporary.era_name == "mobile_social_cloud"
 
     def test_get_era_session_variables_structure(self):
         """Test structure of era session variables."""
@@ -88,10 +87,10 @@ class TestEraConfig:
         assert variables['language'] == "es"
         assert variables['language_name'] == "Spanish"
         assert variables['era_year'] == 1350
-        assert variables['era_name'] == "medieval"
+        assert variables['era_name'] == "late_medieval"
         
         # Check that expressions are in Spanish
-        assert "¡Por mi fe!" in variables['expression_1']
+        assert "En estos años convulsos" in variables['expression_1']
 
     def test_get_era_session_variables_english(self):
         """Test era session variables for English."""
