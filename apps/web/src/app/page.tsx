@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { CountryPhoneInput, PhoneValue } from "@/components/CountryPhoneInput";
 import { YearSlider } from "@/components/YearSlider";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -14,6 +14,9 @@ export default function Home() {
   const [voiceLang, setVoiceLang] = useState<"en" | "es">("en");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [errorType, setErrorType] = useState<'error' | 'warning' | 'info' | null>(null);
+  const [errorSuggestion, setErrorSuggestion] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const [showForm, setShowForm] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [fillGuide, setFillGuide] = useState(false);
@@ -27,10 +30,27 @@ export default function Home() {
   const [randYear, setRandYear] = useState<number | null>(null);
   const [callingYear, setCallingYear] = useState<number | null>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [callSid, setCallSid] = useState<string | null>(null);
+  const [overlayInfo, setOverlayInfo] = useState<string | null>(null);
+  const [finalMessage, setFinalMessage] = useState<string | null>(null);
+  const [showFinalAnimation, setShowFinalAnimation] = useState(false);
+  const [wasRandomYearClicked, setWasRandomYearClicked] = useState(false);
+  const pollIntervalRef = useRef<number | null>(null);
+  const noAnswerTimeoutRef = useRef<number | null>(null);
 
   const isValid = useMemo(() => {
-    return phone.number.length >= 6; // simple check; Twilio will validate fully
-  }, [phone.number]);
+    const fullPhone = `${phone.dial}${phone.number}`;
+    const cleaned = fullPhone.replace(/[^\d+]/g, '');
+    
+    // Must start with + and have valid length
+    if (!cleaned.startsWith('+') || cleaned.length < 12 || cleaned.length > 16) {
+      return false;
+    }
+    
+    // Check if it has valid country code (1-3 digits) and phone number (7-15 digits)
+    const phoneMatch = cleaned.match(/^\+(\d{1,3})(\d{7,15})$/);
+    return phoneMatch !== null;
+  }, [phone.dial, phone.number]);
 
   const DICT = {
     en: {
@@ -51,6 +71,9 @@ export default function Home() {
       overlaySubtitle: "Activating travel machine...",
       checkPhone: "Check Your Phone",
       overlayStatus: "Connection bridging temporal dimensions...",
+      callEnded: "Call ended.",
+      callNotAnswered: "Call not answered.",
+      returningToMachine: "Returning to the time machine...",
       about: "About",
       randomYear: "Random year",
       aboutTitle: "Time Traveler Machine",
@@ -74,6 +97,9 @@ export default function Home() {
       overlaySubtitle: "Activando la máquina de viaje...",
       checkPhone: "Revisa tu teléfono",
       overlayStatus: "Conexión uniendo dimensiones temporales...",
+      callEnded: "Llamada finalizada.",
+      callNotAnswered: "Llamada no contestada.",
+      returningToMachine: "Regresando a la máquina del tiempo...",
       about: "Acerca de",
       randomYear: "Año aleatorio",
       aboutTitle: "Máquina Viajera del Tiempo",
@@ -83,17 +109,99 @@ export default function Home() {
 
   const t = DICT[uiLang];
 
+  // Error handling utilities
+  const clearError = () => {
+    setMessage(null);
+    setErrorType(null);
+    setErrorSuggestion(null);
+  };
+
+  const showError = (message: string, type: 'error' | 'warning' | 'info' = 'error', suggestion?: string) => {
+    setMessage(message);
+    setErrorType(type);
+    setErrorSuggestion(suggestion || null);
+  };
+
+  const getErrorMessage = (error: any, uiLang: 'en' | 'es'): { message: string; type: 'error' | 'warning' | 'info'; suggestion?: string } => {
+    // Network errors
+    if (!error || error.name === 'TypeError' || error.message?.includes('fetch')) {
+      return {
+        message: uiLang === 'es' ? 'No se pudo conectar con el servidor' : 'Could not connect to server',
+        type: 'error',
+        suggestion: uiLang === 'es' ? 'Verifica tu conexión a internet e inténtalo de nuevo' : 'Check your internet connection and try again'
+      };
+    }
+
+    // Parse error response
+    const errorData = error.response?.data || error;
+    const errorCode = errorData.error_code;
+    const userMessage = errorData.error || errorData.message || error.message;
+    const suggestion = errorData.suggestion;
+
+    // Map specific error codes to user-friendly messages
+    const errorMappings: Record<string, { message: string; type: 'error' | 'warning' | 'info'; suggestion: string }> = {
+      'INVALID_PHONE_NUMBER': {
+        message: uiLang === 'es' ? 'Formato de número de teléfono inválido' : 'Invalid phone number format',
+        type: 'error',
+        suggestion: uiLang === 'es' ? 'Asegúrate de incluir el código de país (ej: +1234567890)' : 'Make sure to include country code (e.g., +1234567890)'
+      },
+      'PHONE_NUMBER_NOT_REACHABLE': {
+        message: uiLang === 'es' ? 'El número de teléfono no es alcanzable' : 'Phone number is not reachable',
+        type: 'error',
+        suggestion: uiLang === 'es' ? 'Verifica que el número sea correcto e inténtalo de nuevo' : 'Please verify the number is correct and try again'
+      },
+      'PHONE_NUMBER_BLOCKED': {
+        message: uiLang === 'es' ? 'El número de teléfono está bloqueado' : 'Phone number is blocked',
+        type: 'error',
+        suggestion: uiLang === 'es' ? 'Intenta con un número diferente' : 'Please try a different number'
+      },
+      'VALIDATION_ERROR': {
+        message: uiLang === 'es' ? 'Datos de entrada inválidos' : 'Invalid input data',
+        type: 'error',
+        suggestion: uiLang === 'es' ? 'Revisa los datos ingresados e inténtalo de nuevo' : 'Please check your input and try again'
+      },
+      'CONFIGURATION_ERROR': {
+        message: uiLang === 'es' ? 'Servicio temporalmente no disponible' : 'Service temporarily unavailable',
+        type: 'warning',
+        suggestion: uiLang === 'es' ? 'Inténtalo de nuevo en unos minutos' : 'Please try again in a few minutes'
+      },
+      'AUTHENTICATION_FAILED': {
+        message: uiLang === 'es' ? 'Error de autenticación del servicio' : 'Service authentication failed',
+        type: 'error',
+        suggestion: uiLang === 'es' ? 'Inténtalo de nuevo más tarde' : 'Please try again later'
+      },
+      'INTERNAL_ERROR': {
+        message: uiLang === 'es' ? 'Error interno del servidor' : 'Internal server error',
+        type: 'error',
+        suggestion: uiLang === 'es' ? 'Inténtalo de nuevo en unos momentos' : 'Please try again in a few moments'
+      }
+    };
+
+    if (errorCode && errorMappings[errorCode]) {
+      return errorMappings[errorCode];
+    }
+
+    // Fallback to user message or generic error
+    return {
+      message: userMessage || (uiLang === 'es' ? 'Error desconocido' : 'Unknown error'),
+      type: 'error',
+      suggestion: suggestion || (uiLang === 'es' ? 'Inténtalo de nuevo' : 'Please try again')
+    };
+  };
+
   function randomizeYear() {
     // Toggle behavior: if already selected, apply to slider and unselect
     if (randYear != null) {
       // Do not move the slider or reveal the stored year
       setRandYear(null);
+      setWasRandomYearClicked(false);
       setHasInteracted(true);
       return;
     }
     const y = Math.max(1, Math.floor(Math.random() * 3000));
     // Do not reveal in slider/title; store only for call
     setRandYear(y);
+    setWasRandomYearClicked(true);
     setHasInteracted(true);
   }
 
@@ -101,6 +209,7 @@ export default function Home() {
   function handleYearChange(y: number) {
     setYear(y);
     setRandYear(null);
+    setWasRandomYearClicked(false);
     setHasInteracted(true);
   }
 
@@ -110,7 +219,7 @@ export default function Home() {
     setImpact(true);
     setTimeout(() => setFillSummon(false), 400);
     setTimeout(() => setImpact(false), 220);
-    setMessage(null);
+    clearError();
 
     // Call backend first; only animate on success
     try {
@@ -128,36 +237,129 @@ export default function Home() {
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        const detail = (data && (data.detail || data.error)) || "Unknown error";
-        setMessage(uiLang === 'es' ? `No se pudo iniciar la llamada: ${detail}` : `Could not initiate the call: ${detail}`);
+        const errorInfo = getErrorMessage({ response: { data } }, uiLang);
+        showError(errorInfo.message, errorInfo.type, errorInfo.suggestion);
+        return;
+      }
+
+      const result = await response.json();
+      if (!result.success) {
+        const errorInfo = getErrorMessage(result, uiLang);
+        showError(errorInfo.message, errorInfo.type, errorInfo.suggestion);
         return;
       }
 
       // Success → run spiral + overlay animation
+      const newCallSid: string | undefined = result.callSid;
+      if (newCallSid) {
+        setCallSid(newCallSid);
+      }
       setCallingYear(effectiveYear);
       setShowSpiral(true);
       setPreOverlay(true);
+      setRetryCount(0); // Reset retry count on success
       const spiralDuration = 2000; // 2 seconds for spiral
       const preDelay = spiralDuration + 300; // extra delay after spiral
-      const overlayDuration = 8000;
 
       setTimeout(() => {
         setPreOverlay(false);
         setLoading(true);
         setShowSpiral(false);
-
-        // Auto-hide overlay after duration
-        setTimeout(() => {
-          setLoading(false);
-          setMessage(null);
-          setShowSpiral(false);
-          setCallingYear(null);
-        }, overlayDuration);
+        setOverlayInfo(t.overlayStatus);
+        if (newCallSid) {
+          startCallStatusTracking(newCallSid);
+        }
       }, preDelay);
     } catch (err: any) {
-      setMessage(uiLang === 'es' ? 'No se pudo conectar con el servidor.' : 'Could not reach the server.');
+      const errorInfo = getErrorMessage(err, uiLang);
+      showError(errorInfo.message, errorInfo.type, errorInfo.suggestion);
     }
   }
+
+  function clearTimers() {
+    if (pollIntervalRef.current != null) {
+      clearInterval(pollIntervalRef.current);
+      pollIntervalRef.current = null;
+    }
+    if (noAnswerTimeoutRef.current != null) {
+      clearTimeout(noAnswerTimeoutRef.current);
+      noAnswerTimeoutRef.current = null;
+    }
+  }
+
+  function resetUIToHome() {
+    setLoading(false);
+    setShowSpiral(false);
+    setCallingYear(null);
+    setCallSid(null);
+    setOverlayInfo(null);
+    setFinalMessage(null);
+    setShowFinalAnimation(false);
+    setWasRandomYearClicked(false);
+    setShowForm(false);
+    setCurrentStep(0);
+  }
+
+  function showFinalMessageAndReset(message: string) {
+    setFinalMessage(message);
+    setShowFinalAnimation(true);
+    setLoading(false); // Hide the main overlay
+    
+    // Show final message for 3 seconds, then reset to home
+    setTimeout(() => {
+      resetUIToHome();
+    }, 3000);
+  }
+
+  async function startCallStatusTracking(callSidToTrack: string) {
+    const backend = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+    let answered = false;
+
+    // 20s no-answer timeout
+    noAnswerTimeoutRef.current = window.setTimeout(async () => {
+      if (!answered) {
+        try {
+          await fetch(`${backend}/end-call/${callSidToTrack}?reason=no-answer`, { method: 'POST' });
+        } catch {}
+        clearTimers();
+        showFinalMessageAndReset(t.callNotAnswered);
+      }
+    }, 20000);
+
+    // Poll status every 1.5s
+    pollIntervalRef.current = window.setInterval(async () => {
+      try {
+        const res = await fetch(`${backend}/call-status/${callSidToTrack}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const status = data.status as string;
+        if (status === 'answered') {
+          if (!answered) {
+            answered = true;
+            if (noAnswerTimeoutRef.current != null) {
+              clearTimeout(noAnswerTimeoutRef.current);
+              noAnswerTimeoutRef.current = null;
+            }
+            setOverlayInfo(t.overlayStatus);
+          }
+        }
+        if (status === 'ended' || status === 'failed') {
+          clearTimers();
+          showFinalMessageAndReset(status === 'failed' ? t.callNotAnswered : t.callEnded);
+        }
+      } catch {
+        // ignore transient errors
+      }
+    }, 1500);
+  }
+
+  // Retry function for failed calls
+  const retryCall = () => {
+    if (retryCount < 3) {
+      setRetryCount(prev => prev + 1);
+      initiateCall();
+    }
+  };
 
   function handleGuideMe() {
     setFillGuide(true);
@@ -264,7 +466,8 @@ export default function Home() {
                               setFillProceed(false);
                             }, 450);
                           }}
-                          className={`btn-primary btn-liquid btn-reflect h-10 px-6 ${fillProceed ? 'is-filling' : ''}`}
+                          disabled={!isValid}
+                          className={`btn-primary btn-liquid btn-reflect h-10 px-6 disabled:opacity-50 disabled:cursor-not-allowed ${fillProceed ? 'is-filling' : ''}`}
                         >
                           {t.proceed}
                         </button>
@@ -309,7 +512,28 @@ export default function Home() {
                     </button>
                     )}
                     {message && (
-                      <div className="text-sm text-slate-200 mt-4 w-full text-center">{message}</div>
+                      <div className="mt-4 w-full text-center">
+                        <div className={`text-sm mb-2 ${
+                          errorType === 'error' ? 'text-red-300' : 
+                          errorType === 'warning' ? 'text-yellow-300' : 
+                          'text-blue-300'
+                        }`}>
+                          {message}
+                        </div>
+                        {errorSuggestion && (
+                          <div className="text-xs text-slate-400 mb-3">
+                            {errorSuggestion}
+                          </div>
+                        )}
+                        {errorType === 'error' && retryCount < 3 && (
+                          <button
+                            onClick={retryCall}
+                            className="text-xs px-4 py-2 rounded-lg border border-slate-500 hover:border-slate-400 hover:bg-slate-800/50 transition-colors"
+                          >
+                            {uiLang === 'es' ? 'Reintentar' : 'Retry'} ({retryCount}/3)
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -338,7 +562,7 @@ export default function Home() {
               ))}
               
               <div className="connecting-card-enhanced fk-grotesk-light relative z-10">
-                <div className="era-year">{uiLang === 'es' ? `Alguien del año ${callingYear ?? year} te está llamando…` : `Someone from the year ${callingYear ?? year} is calling you…`}</div>
+                <div className="era-year">{uiLang === 'es' ? `Alguien del año ${wasRandomYearClicked ? '?' : (callingYear ?? year)} te está llamando…` : `Someone from the year ${wasRandomYearClicked ? '?' : (callingYear ?? year)} is calling you…`}</div>
                 <div className="subtitle">{t.overlaySubtitle}</div>
                 
                 <div className="liquid-phone-orb">
@@ -353,7 +577,7 @@ export default function Home() {
                   {t.checkPhone}
                 </div>
                 
-                <div className="status-text">{t.overlayStatus}</div>
+                <div className="status-text">{overlayInfo || t.overlayStatus}</div>
               </div>
             </div>
           )}
@@ -361,6 +585,24 @@ export default function Home() {
           {showSpiral && <div className="button-spiral" aria-hidden="true" />}
         </div>
       </main>
+
+      {/* Final message animation */}
+      {showFinalAnimation && (
+        <div className="fixed inset-0 z-70 flex items-center justify-center p-4 asteroid-field" style={{background: 'rgba(0,0,0,0.8)'}}>
+          {/* Floating asteroid particles */}
+          {Array.from({length: 25}).map((_, i) => (
+            <div key={i} className={`asteroid asteroid-${i + 1}`} />
+          ))}
+          
+          <div className="final-message-modal fk-grotesk-light max-w-md relative z-10">
+            <div className="text-center">
+              <div className="text-4xl mb-4">📞</div>
+              <h3 className="text-2xl font-semibold mb-2 text-white">{finalMessage}</h3>
+              <div className="text-slate-300 text-sm">{t.returningToMachine}</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer mini-section with background continuation and fade */}
       <a
@@ -414,5 +656,6 @@ export default function Home() {
     </>
   );
 }
+
 
 

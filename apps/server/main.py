@@ -4,6 +4,7 @@ import json
 import traceback
 import uvicorn
 import base64
+import logging
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, WebSocket, Form, Depends, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -49,6 +50,18 @@ if not ELEVENLABS_API_KEY:
 
 app = FastAPI(title="Twilio-ElevenLabs Integration Server")
 
+# Configure uvicorn access logger to suppress call-status logs unless DEBUG_LOGS is true
+if not DEBUG_LOGS:
+    # Create a custom filter to suppress call-status logs
+    class CallStatusFilter(logging.Filter):
+        def filter(self, record):
+            # Suppress logs that contain call-status in the message
+            return "call-status" not in record.getMessage()
+    
+    # Apply the filter to uvicorn access logger
+    uvicorn_access_logger = logging.getLogger("uvicorn.access")
+    uvicorn_access_logger.addFilter(CallStatusFilter())
+
 # CORS Configuration
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 
@@ -72,6 +85,19 @@ first_message_manager = FirstMessageManager()
 print(f"🎤 Voice Manager initialized with {voice_manager.get_voice_statistics()}")
 print(f"🤖 Agent Manager initialized with {agent_manager.get_agent_statistics()}")
 print(f"💬 First Message Manager initialized with {first_message_manager.get_statistics()['total_eras']} eras")
+
+# In-memory call status store (simple, ephemeral)
+# Structure per callSid:
+# {
+#   'status': 'initiated'|'ringing'|'answered'|'ended'|'failed',
+#   'to': str,
+#   'lang': str,
+#   'year': int,
+#   'twiml_requested': bool,
+#   'websocket_connected': bool,
+#   'stream_sid': Optional[str],
+# }
+CALL_STATUS = {}
 
 # Pydantic models for request bodies
 class OutboundCallRequest(BaseModel):
@@ -106,6 +132,7 @@ def get_twilio_client():
         raise HTTPException(status_code=500, detail="Twilio credentials not configured")
     return Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
+
 @app.get("/")
 async def root():
     return {"message": "Twilio-ElevenLabs Integration Server"}
@@ -137,7 +164,21 @@ async def outbound_call(
             )
 
         # Create URL for TwiML with URL-encoded parameters for language and year
-        twiml_url = f"https://{request.headers.get('host')}/outbound-call-twiml?lang={quote(call_request.lang)}&year={call_request.year}"
+        # Handle both development (ngrok) and production (Vercel) environments
+        host = request.headers.get('host')
+        
+        # Check if we're in development (localhost) or production
+        if 'localhost' in host or '127.0.0.1' in host:
+            # Development: Use ngrok URL for TwiML webhook
+            ngrok_url = os.getenv("SERVER_DOMAIN")
+            twiml_url = f"{ngrok_url}/outbound-call-twiml?lang={quote(call_request.lang)}&year={call_request.year}"
+            print(f"🔧 Development mode - Using ngrok URL: {twiml_url}")
+        else:
+            # Production: Use the actual request host (Vercel domain)
+            twiml_url = f"https://{host}/outbound-call-twiml?lang={quote(call_request.lang)}&year={call_request.year}"
+            print(f"🚀 Production mode - Using host: {twiml_url}")
+        
+        print(f"📞 Calling: {call_request.to} ({call_request.lang}, {call_request.year})")
 
         # Initiate the call via Twilio
         call = twilio_client.calls.create(
@@ -145,6 +186,17 @@ async def outbound_call(
             to=call_request.to,
             url=twiml_url
         )
+
+        # Initialize call status
+        CALL_STATUS[call.sid] = {
+            "status": "initiated",
+            "to": call_request.to,
+            "lang": call_request.lang,
+            "year": call_request.year,
+            "twiml_requested": False,
+            "websocket_connected": False,
+            "stream_sid": None,
+        }
 
         return JSONResponse({
             "success": True,
@@ -232,6 +284,10 @@ async def outbound_call_twiml(
     print(f"🔗 TwiML WebSocket URL: {websocket_url}")
     print(f"📋 Custom parameters: lang={lang}, year={year}")
 
+    # We cannot access callSid here directly from Twilio, but we can mark that TwiML was requested
+    # based on IP or timing it is a hint the call is ringing/connecting. This endpoint is called by Twilio.
+    # If desired, we could accept an optional callSid in query and mark it; skipping to avoid trust issues.
+
     connect.append(stream)
     response.append(connect)
 
@@ -277,6 +333,19 @@ async def handle_outbound_media_stream(websocket: WebSocket):
 
                 print(f"Outbound call started - StreamSid: {stream_sid}, CallSid: {call_sid}")
                 print(f"Call parameters - Language: {lang}, Year: {year}")
+
+                # Mark call as answered/connected
+                if call_sid:
+                    existing = CALL_STATUS.get(call_sid) or {}
+                    existing.update({
+                        "status": "answered",
+                        "twiml_requested": True,
+                        "websocket_connected": True,
+                        "stream_sid": stream_sid,
+                        "lang": lang,
+                        "year": year,
+                    })
+                    CALL_STATUS[call_sid] = existing
 
                 # Get era-specific configuration
                 session_vars = get_era_session_variables(year, lang)
@@ -446,6 +515,13 @@ async def handle_outbound_media_stream(websocket: WebSocket):
             # Handle stop event
             elif event_type == "stop":
                 print(f"Call ended - StreamSid: {stream_sid}")
+                # Mark call as ended
+                if call_sid:
+                    existing = CALL_STATUS.get(call_sid) or {}
+                    existing.update({
+                        "status": "ended",
+                    })
+                    CALL_STATUS[call_sid] = existing
                 if conversation:
                     try:
                         conversation.end_session()
@@ -465,6 +541,37 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                 print("Conversation cleanup completed")
             except Exception as e:
                 print(f"Error in conversation cleanup: {str(e)}")
+
+@app.get("/call-status/{call_sid}")
+async def get_call_status(call_sid: str):
+    if DEBUG_LOGS:
+        print(f"📊 Status check for call: {call_sid}")
+    status = CALL_STATUS.get(call_sid)
+    if not status:
+        return JSONResponse({"success": False, "status": "unknown"}, status_code=404)
+    return JSONResponse({"success": True, "status": status.get("status"), "details": status})
+
+@app.post("/end-call/{call_sid}")
+async def end_call(call_sid: str, request: Request = None, twilio_client: Client = Depends(get_twilio_client)):
+    try:
+        reason = request.query_params.get("reason") if request else None
+        # Attempt to complete the call via Twilio
+        try:
+            twilio_client.calls(call_sid).update(status="completed")
+        except Exception as twilio_err:
+            # If update fails (e.g., call already ended), continue to update local state
+            if DEBUG_LOGS:
+                print(f"Warning ending call via Twilio: {twilio_err}")
+
+        existing = CALL_STATUS.get(call_sid) or {}
+        existing.update({
+            "status": "failed" if reason == "no-answer" else "ended",
+            "ended_reason": reason or "manual",
+        })
+        CALL_STATUS[call_sid] = existing
+        return JSONResponse({"success": True, "status": CALL_STATUS[call_sid]["status"], "details": CALL_STATUS[call_sid]})
+    except Exception as e:
+        return JSONResponse({"success": False, "error": str(e)}, status_code=500)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
