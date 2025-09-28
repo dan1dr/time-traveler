@@ -80,13 +80,45 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "OPTIONS", "PUT", "DELETE"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Debug logging for CORS
 if DEBUG_LOGS:
     print(f"🔗 CORS configured for origins: {ALLOWED_ORIGINS}")
+
+# Add a global OPTIONS handler as fallback
+@app.options("/{path:path}")
+async def options_handler(path: str, request: Request):
+    """Global OPTIONS handler for CORS preflight requests"""
+    origin = request.headers.get("origin")
+    if DEBUG_LOGS:
+        print(f"🌐 OPTIONS request for {path} from origin: {origin}")
+    
+    # Check if origin is allowed
+    if origin in ALLOWED_ORIGINS or "*" in ALLOWED_ORIGINS:
+        return JSONResponse(
+            {"message": "OK"},
+            headers={
+                "Access-Control-Allow-Origin": origin,
+                "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT, DELETE",
+                "Access-Control-Allow-Headers": "*",
+                "Access-Control-Allow-Credentials": "true",
+                "Access-Control-Max-Age": "86400"
+            }
+        )
+    else:
+        if DEBUG_LOGS:
+            print(f"❌ CORS blocked: origin {origin} not in allowed origins {ALLOWED_ORIGINS}")
+        return JSONResponse(
+            {"error": "CORS not allowed"},
+            status_code=400,
+            headers={
+                "Access-Control-Allow-Origin": "null"
+            }
+        )
 
 # Initialize voice and agent managers globally
 voice_manager = VoiceManager()
@@ -167,10 +199,19 @@ async def get_configuration():
     return {
         "jwt": get_jwt_config(),
         "rate_limiting": get_rate_limit_config(),
-        "debug_logs": DEBUG_LOGS
+        "debug_logs": DEBUG_LOGS,
+        "cors": {
+            "allowed_origins": ALLOWED_ORIGINS,
+            "cors_enabled": True
+        }
     }
 
 # Authentication Endpoints
+@app.options("/auth/login")
+async def auth_login_options():
+    """Handle CORS preflight for auth/login endpoint"""
+    return JSONResponse({"message": "OK"})
+
 @app.post("/auth/login")
 async def login():
     """Generate a JWT token for API access"""
@@ -221,6 +262,11 @@ async def get_rate_limit_status_endpoint(current_user: dict = Depends(get_curren
             "session_id": current_user["session_id"]
         }
     }
+
+@app.options("/outbound-call")
+async def outbound_call_options():
+    """Handle CORS preflight for outbound-call endpoint"""
+    return JSONResponse({"message": "OK"})
 
 @app.post("/outbound-call")
 async def outbound_call(
