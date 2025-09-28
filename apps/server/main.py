@@ -30,7 +30,7 @@ from errors import (
 )
 
 # Import separated modules
-from auth import create_jwt_token, get_current_user, get_jwt_config
+from auth import create_jwt_token, get_current_user, get_jwt_config, JWT_EXPIRATION_HOURS
 from rate_limiting import rate_limit_dependency, get_rate_limit_status, get_rate_limit_config
 
 # Import voice and agent managers
