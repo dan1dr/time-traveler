@@ -3,20 +3,27 @@ import sys
 import json
 import traceback
 import uvicorn
+import base64
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, WebSocket, Form, Depends, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from twilio.twiml.voice_response import VoiceResponse, Connect, Stream
 from twilio.rest import Client
+from twilio.base.exceptions import TwilioRestException
 from elevenlabs import ElevenLabs
 from elevenlabs.conversational_ai.conversation import Conversation, ConversationInitiationData
 from elevenlabs.conversational_ai.default_audio_interface import DefaultAudioInterface
 from twilio_audio import TwilioAudioInterface
 from starlette.websockets import WebSocketDisconnect, WebSocketState
 from urllib.parse import quote
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from era_config import get_era_session_variables
+from errors import (
+    TimeTravelerError, PhoneNumberError, TwilioServiceError, 
+    ElevenLabsServiceError, ConfigurationError,
+    map_twilio_error, validate_phone_number, validate_year, validate_language
+)
 
 # Import voice and agent managers
 from shared_py.voice_manager import VoiceManager
@@ -71,6 +78,27 @@ class OutboundCallRequest(BaseModel):
     to: str
     lang: str = "en"  # Default to English
     year: int = 2024  # Default to current year
+    
+    @validator('to')
+    def validate_phone_number(cls, v):
+        is_valid, error_msg = validate_phone_number(v)
+        if not is_valid:
+            raise ValueError(error_msg)
+        return v
+    
+    @validator('lang')
+    def validate_language(cls, v):
+        is_valid, error_msg = validate_language(v)
+        if not is_valid:
+            raise ValueError(error_msg)
+        return v
+    
+    @validator('year')
+    def validate_year(cls, v):
+        is_valid, error_msg = validate_year(v)
+        if not is_valid:
+            raise ValueError(error_msg)
+        return v
 
 # Helper func to get Twilio client
 def get_twilio_client():
@@ -92,10 +120,22 @@ async def outbound_call(
     request: Request = None,
     twilio_client: Client = Depends(get_twilio_client)
 ):
-    if not TWILIO_PHONE_NUMBER:
-        raise HTTPException(status_code=500, detail="Twilio phone number not configured")
-
     try:
+        # Check configuration
+        if not TWILIO_PHONE_NUMBER:
+            raise ConfigurationError(
+                "Twilio phone number not configured",
+                "CONFIGURATION_ERROR",
+                "Service temporarily unavailable. Please try again later."
+            )
+        
+        if not ELEVENLABS_API_KEY:
+            raise ConfigurationError(
+                "ElevenLabs API key not configured",
+                "CONFIGURATION_ERROR", 
+                "Service temporarily unavailable. Please try again later."
+            )
+
         # Create URL for TwiML with URL-encoded parameters for language and year
         twiml_url = f"https://{request.headers.get('host')}/outbound-call-twiml?lang={quote(call_request.lang)}&year={call_request.year}"
 
@@ -108,7 +148,7 @@ async def outbound_call(
 
         return JSONResponse({
             "success": True,
-            "message": "Call initiated",
+            "message": "Call initiated successfully",
             "callSid": call.sid,
             "parameters": {
                 "to": call_request.to,
@@ -116,14 +156,57 @@ async def outbound_call(
                 "year": call_request.year
             }
         })
-    except Exception as e:
-        print(f"Error initiating outbound call: {str(e)}")
+        
+    except TwilioRestException as e:
+        print(f"Twilio error: {str(e)}")
+        error_info = map_twilio_error(e)
+        return JSONResponse(
+            status_code=400,
+            content={
+                "success": False,
+                "error": error_info["user_message"],
+                "error_code": error_info["error_code"],
+                "suggestion": error_info["suggestion"],
+                "details": f"Twilio error {getattr(e, 'code', 'unknown')}: {str(e)}"
+            }
+        )
+        
+    except ConfigurationError as e:
+        print(f"Configuration error: {str(e)}")
         return JSONResponse(
             status_code=500,
             content={
                 "success": False,
-                "error": "Failed to initiate call",
-                "details": str(e)
+                "error": e.user_message,
+                "error_code": e.error_code,
+                "suggestion": "Please try again later or contact support if this persists."
+            }
+        )
+        
+    except ValueError as e:
+        # Pydantic validation errors
+        print(f"Validation error: {str(e)}")
+        return JSONResponse(
+            status_code=400,
+            content={
+                "success": False,
+                "error": str(e),
+                "error_code": "VALIDATION_ERROR",
+                "suggestion": "Please check your input and try again."
+            }
+        )
+        
+    except Exception as e:
+        print(f"Unexpected error initiating outbound call: {str(e)}")
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": "An unexpected error occurred",
+                "error_code": "INTERNAL_ERROR",
+                "suggestion": "Please try again in a few moments. If the problem persists, contact support.",
+                "details": str(e) if DEBUG_LOGS else "Internal server error"
             }
         )
 
@@ -337,6 +420,20 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                 except Exception as e:
                     print(f"Error starting ElevenLabs conversation: {str(e)}")
                     traceback.print_exc()
+                    # Send error message to user via TwiML
+                    try:
+                        error_response = VoiceResponse()
+                        error_response.say("I apologize, but I'm experiencing technical difficulties. Please try calling again in a few moments.")
+                        error_response.hangup()
+                        await websocket.send_text(json.dumps({
+                            "event": "media",
+                            "streamSid": stream_sid,
+                            "media": {
+                                "payload": base64.b64encode(str(error_response).encode()).decode()
+                            }
+                        }))
+                    except:
+                        pass  # If we can't send error message, just continue
 
             # Handle incoming media
             elif event_type == "media" and conversation:
