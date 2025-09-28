@@ -110,6 +110,10 @@ TWILIO_PHONE_NUMBER=+1...
 JWT_SECRET=your_secure_jwt_secret_here
 JWT_EXPIRATION_HOURS=24
 
+# Rate Limiting (Optional - defaults shown)
+RATE_LIMIT_CALLS=5
+RATE_LIMIT_WINDOW_MINUTES=5
+
 # CORS and Debug
 ALLOWED_ORIGINS=http://localhost:3000,https://your-app.vercel.app
 DEBUG_LOGS=true
@@ -151,12 +155,24 @@ python3 -c "import secrets; print(secrets.token_urlsafe(32))"
 # 1. Get token
 TOKEN=$(curl -s -X POST https://your-api.com/auth/login | jq -r '.token')
 
-# 2. Make authenticated call
+# 2. Check rate limit status (optional)
+curl -X GET https://your-api.com/rate-limit/status \
+  -H "Authorization: Bearer $TOKEN"
+
+# 3. Make authenticated call
 curl -X POST https://your-api.com/outbound-call \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"to":"+1234567890","lang":"en","year":1350}'
 ```
+
+### Rate Limiting
+The API includes built-in rate limiting to prevent abuse:
+- **Default**: 5 calls per 5-minute window per token
+- **Configurable**: Set `RATE_LIMIT_CALLS` and `RATE_LIMIT_WINDOW_MINUTES` in environment
+- **Sliding Window**: Uses a sliding window approach for fair rate limiting
+- **Status Endpoint**: Check current rate limit status with `GET /rate-limit/status`
+- **Error Response**: Returns HTTP 429 with detailed rate limit information when exceeded
 
 ## 📁 Project Structure
 

@@ -6,7 +6,9 @@ import uvicorn
 import base64
 import logging
 import secrets
+import time
 from datetime import datetime, timedelta
+from collections import defaultdict, deque
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, WebSocket, Form, Depends, HTTPException, Header
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -51,6 +53,11 @@ TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
 JWT_SECRET = os.getenv("JWT_SECRET", secrets.token_urlsafe(32))
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = int(os.getenv("JWT_EXPIRATION_HOURS", "1"))  # 1 hour default
+
+# Rate Limiting Configuration
+RATE_LIMIT_CALLS = int(os.getenv("RATE_LIMIT_CALLS", "5"))  # Max calls per window
+RATE_LIMIT_WINDOW_MINUTES = int(os.getenv("RATE_LIMIT_WINDOW_MINUTES", "5"))  # Window in minutes
+RATE_LIMIT_WINDOW_SECONDS = RATE_LIMIT_WINDOW_MINUTES * 60
 
 # Check for required environment variables
 if not ELEVENLABS_API_KEY:
@@ -141,12 +148,100 @@ print(f"💬 First Message Manager initialized with {first_message_manager.get_s
 # }
 CALL_STATUS = {}
 
+# Rate limiting store - tracks call timestamps per token
+# Structure: {token: deque of timestamps}
+RATE_LIMIT_STORE = defaultdict(lambda: deque())
+
 def cleanup_call_status(call_sid: str):
     """Remove call status entry to prevent memory growth"""
     if call_sid in CALL_STATUS:
         del CALL_STATUS[call_sid]
         if DEBUG_LOGS:
             print(f"🧹 Cleaned up call status for {call_sid}")
+
+def cleanup_rate_limit_store():
+    """Clean up old entries from rate limit store to prevent memory growth"""
+    current_time = time.time()
+    cutoff_time = current_time - RATE_LIMIT_WINDOW_SECONDS
+    
+    # Clean up old entries for all tokens
+    for token in list(RATE_LIMIT_STORE.keys()):
+        timestamps = RATE_LIMIT_STORE[token]
+        # Remove timestamps older than the window
+        while timestamps and timestamps[0] < cutoff_time:
+            timestamps.popleft()
+        
+        # If no timestamps left, remove the token entry
+        if not timestamps:
+            del RATE_LIMIT_STORE[token]
+    
+    if DEBUG_LOGS:
+        print(f"🧹 Rate limit cleanup completed. Active tokens: {len(RATE_LIMIT_STORE)}")
+
+def check_rate_limit(token: str) -> dict:
+    """
+    Check if token is within rate limits
+    Returns: {'allowed': bool, 'remaining': int, 'reset_time': float}
+    """
+    current_time = time.time()
+    cutoff_time = current_time - RATE_LIMIT_WINDOW_SECONDS
+    
+    # Get or create timestamps for this token
+    timestamps = RATE_LIMIT_STORE[token]
+    
+    # Remove old timestamps outside the window
+    while timestamps and timestamps[0] < cutoff_time:
+        timestamps.popleft()
+    
+    # Check if we're within the limit
+    call_count = len(timestamps)
+    allowed = call_count < RATE_LIMIT_CALLS
+    
+    if allowed:
+        # Add current timestamp
+        timestamps.append(current_time)
+        call_count += 1
+    
+    # Calculate reset time (when the oldest call in window will expire)
+    reset_time = timestamps[0] + RATE_LIMIT_WINDOW_SECONDS if timestamps else current_time
+    remaining = max(0, RATE_LIMIT_CALLS - call_count)
+    
+    return {
+        'allowed': allowed,
+        'remaining': remaining,
+        'reset_time': reset_time,
+        'current_count': call_count,
+        'limit': RATE_LIMIT_CALLS,
+        'window_minutes': RATE_LIMIT_WINDOW_MINUTES
+    }
+
+def rate_limit_dependency(current_user: dict = Depends(get_current_user)):
+    """Dependency to check rate limits for authenticated users"""
+    # Use session_id as the rate limiting key (unique per token)
+    token_key = current_user.get("session_id", "unknown")
+    
+    # Clean up old entries periodically (every 10th call to avoid overhead)
+    if len(RATE_LIMIT_STORE) % 10 == 0:
+        cleanup_rate_limit_store()
+    
+    # Check rate limit
+    rate_info = check_rate_limit(token_key)
+    
+    if not rate_info['allowed']:
+        reset_time_utc = datetime.fromtimestamp(rate_info['reset_time'])
+        raise HTTPException(
+            status_code=429,
+            detail={
+                "error": "Rate limit exceeded",
+                "error_code": "RATE_LIMIT_EXCEEDED",
+                "message": f"Too many calls. Limit: {rate_info['limit']} calls per {rate_info['window_minutes']} minutes",
+                "remaining": rate_info['remaining'],
+                "reset_time": reset_time_utc.isoformat(),
+                "current_count": rate_info['current_count']
+            }
+        )
+    
+    return current_user
 
 # Pydantic models for request bodies
 class OutboundCallRequest(BaseModel):
@@ -227,12 +322,49 @@ async def verify_token(current_user: dict = Depends(get_current_user)):
         "message": "Token is valid"
     }
 
+@app.get("/rate-limit/status")
+async def get_rate_limit_status(current_user: dict = Depends(get_current_user)):
+    """Get current rate limit status for the authenticated user"""
+    token_key = current_user.get("session_id", "unknown")
+    
+    # Clean up old entries first
+    cleanup_rate_limit_store()
+    
+    # Get current rate limit info without incrementing
+    current_time = time.time()
+    cutoff_time = current_time - RATE_LIMIT_WINDOW_SECONDS
+    
+    timestamps = RATE_LIMIT_STORE[token_key]
+    # Remove old timestamps for accurate count
+    while timestamps and timestamps[0] < cutoff_time:
+        timestamps.popleft()
+    
+    call_count = len(timestamps)
+    remaining = max(0, RATE_LIMIT_CALLS - call_count)
+    reset_time = timestamps[0] + RATE_LIMIT_WINDOW_SECONDS if timestamps else current_time
+    
+    return {
+        "success": True,
+        "rate_limit": {
+            "limit": RATE_LIMIT_CALLS,
+            "window_minutes": RATE_LIMIT_WINDOW_MINUTES,
+            "current_count": call_count,
+            "remaining": remaining,
+            "reset_time": datetime.fromtimestamp(reset_time).isoformat(),
+            "can_make_call": call_count < RATE_LIMIT_CALLS
+        },
+        "user": {
+            "user_id": current_user["user_id"],
+            "session_id": current_user["session_id"]
+        }
+    }
+
 @app.post("/outbound-call")
 async def outbound_call(
     call_request: OutboundCallRequest,
     request: Request = None,
     twilio_client: Client = Depends(get_twilio_client),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(rate_limit_dependency)
 ):
     try:
         # Check configuration
