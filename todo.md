@@ -119,4 +119,9 @@ The time traveler agent system is now **FULLY PRODUCTION-READY** with:
 - ✅ 17 historical periods with bilingual support
 - ✅ Complete documentation and setup guides
 
+todos:
+-fix false 401 unathorized when call ended or unanswered in the logs
+-implement stars animation
+-testing models and latency obtained - maybe change llm providers and/or prompt
+
 
