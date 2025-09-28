@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { CountryPhoneInput, PhoneValue } from "@/components/CountryPhoneInput";
 import { YearSlider } from "@/components/YearSlider";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -35,8 +35,122 @@ export default function Home() {
   const [finalMessage, setFinalMessage] = useState<string | null>(null);
   const [showFinalAnimation, setShowFinalAnimation] = useState(false);
   const [wasRandomYearClicked, setWasRandomYearClicked] = useState(false);
+  
+  // JWT Token management
+  const [authToken, setAuthToken] = useState<string | null>(null);
+  const [tokenExpiry, setTokenExpiry] = useState<number | null>(null);
   const pollIntervalRef = useRef<number | null>(null);
   const noAnswerTimeoutRef = useRef<number | null>(null);
+
+  // JWT Helper Functions
+  const getAuthHeaders = (): Record<string, string> => {
+    if (!authToken) return {};
+    return { Authorization: `Bearer ${authToken}` };
+  };
+
+  const isTokenExpired = () => {
+    if (!tokenExpiry) return true;
+    return Date.now() >= tokenExpiry;
+  };
+
+  const login = async () => {
+    try {
+      const backend = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+      const response = await fetch(`${backend}/auth/login`, { method: 'POST' });
+      const data = await response.json();
+      
+      if (data.success) {
+        const expiry = Date.now() + (data.expires_in * 1000);
+        setAuthToken(data.token);
+        setTokenExpiry(expiry);
+        localStorage.setItem('time-traveler-token', data.token);
+        localStorage.setItem('time-traveler-token-expiry', expiry.toString());
+        return true;
+      }
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
+    return false;
+  };
+
+  const refreshToken = async () => {
+    try {
+      const backend = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+      const response = await fetch(`${backend}/auth/refresh`, {
+        method: 'POST',
+        headers: getAuthHeaders()
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        const expiry = Date.now() + (data.expires_in * 1000);
+        setAuthToken(data.token);
+        setTokenExpiry(expiry);
+        localStorage.setItem('time-traveler-token', data.token);
+        localStorage.setItem('time-traveler-token-expiry', expiry.toString());
+        return true;
+      }
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+    }
+    return false;
+  };
+
+  // Smart API call with automatic retry on auth failure
+  const makeAuthenticatedRequest = async (url: string, options: RequestInit = {}) => {
+    const backend = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+    const fullUrl = url.startsWith('http') ? url : `${backend}${url}`;
+    
+    // First attempt with current token
+    let response = await fetch(fullUrl, {
+      ...options,
+      headers: {
+        ...options.headers,
+        ...getAuthHeaders()
+      }
+    });
+    
+    // If 401, try to get a new token and retry once
+    if (response.status === 401) {
+      console.log('🔄 Token expired, getting new token...');
+      const loginSuccess = await login();
+      
+      if (loginSuccess) {
+        // Retry with new token
+        response = await fetch(fullUrl, {
+          ...options,
+          headers: {
+            ...options.headers,
+            ...getAuthHeaders()
+          }
+        });
+      }
+    }
+    
+    return response;
+  };
+
+  // Initialize auth token on component mount
+  React.useEffect(() => {
+    const initializeAuth = async () => {
+      const storedToken = localStorage.getItem('time-traveler-token');
+      const storedExpiry = localStorage.getItem('time-traveler-token-expiry');
+      
+      if (storedToken && storedExpiry) {
+        const expiry = parseInt(storedExpiry);
+        if (Date.now() < expiry) {
+          setAuthToken(storedToken);
+          setTokenExpiry(expiry);
+          return; // We have a valid token
+        }
+      }
+      
+      // No valid token, get a new one
+      await login();
+    };
+    
+    initializeAuth();
+  }, []);
 
   const isValid = useMemo(() => {
     const fullPhone = `${phone.dial}${phone.number}`;
@@ -227,7 +341,7 @@ export default function Home() {
     try {
       const backend = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
       const effectiveYear = randYear ?? year;
-      const response = await fetch(`${backend}/outbound-call`, {
+      const response = await makeAuthenticatedRequest("/outbound-call", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -321,7 +435,9 @@ export default function Home() {
     noAnswerTimeoutRef.current = window.setTimeout(async () => {
       if (!answered) {
         try {
-          await fetch(`${backend}/end-call/${callSidToTrack}?reason=no-answer`, { method: 'POST' });
+          await makeAuthenticatedRequest(`/end-call/${callSidToTrack}?reason=no-answer`, { 
+            method: 'POST'
+          });
         } catch {}
         clearTimers();
         showFinalMessageAndReset(t.callNotAnswered);
@@ -331,7 +447,7 @@ export default function Home() {
     // Poll status every 1.5s
     pollIntervalRef.current = window.setInterval(async () => {
       try {
-        const res = await fetch(`${backend}/call-status/${callSidToTrack}`);
+        const res = await makeAuthenticatedRequest(`/call-status/${callSidToTrack}`);
         if (!res.ok) return;
         const data = await res.json();
         const status = data.status as string;

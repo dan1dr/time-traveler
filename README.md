@@ -33,6 +33,7 @@ An AI-powered time traveler that calls you from any historical era! Using Eleven
 - **📞 Live Phone Calls**: Real-time conversations via Twilio integration
 - **🧠 Dynamic Context**: ElevenLabs agents receive era-specific prompts and expressions
 - **🔧 JSON API**: Simple REST API for initiating calls with `{to, lang, year}` parameters
+- **🔐 JWT Authentication**: Secure token-based authentication for all API endpoints
 
 ## 🚀 Quick Start
 
@@ -47,10 +48,18 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ngrok http 8000
 ```
 
-### 3. Make a Call
+### 3. Get JWT Token
 ```bash
+# Get authentication token
+curl -X POST https://YOUR_NGROK_URL/auth/login
+```
+
+### 4. Make a Call
+```bash
+# Use the token from step 3
 curl -X POST https://YOUR_NGROK_URL/outbound-call \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE" \
   -d '{
     "to": "+1234567890",
     "lang": "en",
@@ -97,6 +106,10 @@ TWILIO_ACCOUNT_SID=AC...
 TWILIO_AUTH_TOKEN=...
 TWILIO_PHONE_NUMBER=+1...
 
+# JWT Authentication
+JWT_SECRET=your_secure_jwt_secret_here
+JWT_EXPIRATION_HOURS=24
+
 # CORS and Debug
 ALLOWED_ORIGINS=http://localhost:3000,https://your-app.vercel.app
 DEBUG_LOGS=true
@@ -116,6 +129,34 @@ PERSONALITY: Use these expressions naturally: "{{expression_1}}", "{{expression_
 ```
 
 See `apps/server/AGENT_SETUP.md` for complete configuration guide.
+
+## 🔐 JWT Authentication
+
+The API uses JWT (JSON Web Tokens) for secure authentication. All endpoints require a valid token.
+
+### Generate JWT Secret
+```bash
+# Generate a secure secret for your .env file
+python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+### Authentication Flow
+1. **Get Token**: `POST /auth/login` - Returns JWT token
+2. **Use Token**: Include `Authorization: Bearer TOKEN` in API calls
+3. **Refresh Token**: `POST /auth/refresh` - Get new token before expiration
+4. **Verify Token**: `GET /auth/verify` - Check if token is valid
+
+### Example Usage
+```bash
+# 1. Get token
+TOKEN=$(curl -s -X POST https://your-api.com/auth/login | jq -r '.token')
+
+# 2. Make authenticated call
+curl -X POST https://your-api.com/outbound-call \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"to":"+1234567890","lang":"en","year":1350}'
+```
 
 ## 📁 Project Structure
 

@@ -179,7 +179,7 @@ time-traveler/
 
 **Security**
 
-* HTTPS/WSS; verify Twilio signatures (post-MVP); git-ignore env files; basic per-phone rate limit if needed.
+* JWT authentication for all API endpoints; HTTPS/WSS; verify Twilio signatures (post-MVP); git-ignore env files; basic per-phone rate limit if needed.
 
 **Deployment**
 
@@ -201,6 +201,8 @@ ELEVENLABS_AGENT_ID_3=agent_...  # Optional
 TWILIO_ACCOUNT_SID=AC...
 TWILIO_AUTH_TOKEN=...
 TWILIO_PHONE_NUMBER=+1...
+JWT_SECRET=your_secure_jwt_secret_here
+JWT_EXPIRATION_HOURS=24
 ALLOWED_ORIGINS=http://localhost:3000,https://your-app.vercel.app
 DEBUG_LOGS=true
 ```
@@ -223,9 +225,14 @@ poetry install
 poetry run uvicorn main:app --reload --port 8000
 ngrok http 8000   # copy HTTPS URL for Twilio webhook configuration
 
-# Test a call (replace with your ngrok URL)
+# Test authentication and call (replace with your ngrok URL)
+# 1. Get JWT token
+curl -X POST "https://your-ngrok-url.ngrok.io/auth/login"
+
+# 2. Use token to make call (replace YOUR_TOKEN with actual token)
 curl -X POST "https://your-ngrok-url.ngrok.io/outbound-call" \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
   -d '{"to":"+1XXXXXXXXXX","year":1580,"lang":"es"}'
 
 # Run tests from root
