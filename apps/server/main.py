@@ -141,6 +141,13 @@ print(f"💬 First Message Manager initialized with {first_message_manager.get_s
 # }
 CALL_STATUS = {}
 
+def cleanup_call_status(call_sid: str):
+    """Remove call status entry to prevent memory growth"""
+    if call_sid in CALL_STATUS:
+        del CALL_STATUS[call_sid]
+        if DEBUG_LOGS:
+            print(f"🧹 Cleaned up call status for {call_sid}")
+
 # Pydantic models for request bodies
 class OutboundCallRequest(BaseModel):
     to: str
@@ -602,6 +609,8 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                         "status": "ended",
                     })
                     CALL_STATUS[call_sid] = existing
+                    # Clean up the call status entry to prevent memory growth
+                    cleanup_call_status(call_sid)
                 if conversation:
                     try:
                         conversation.end_session()
@@ -612,6 +621,10 @@ async def handle_outbound_media_stream(websocket: WebSocket):
     except Exception as e:
         print(f"WebSocket error: {str(e)}")
         traceback.print_exc()
+        
+        # Clean up call status if we have a call_sid and there was an error
+        if call_sid:
+            cleanup_call_status(call_sid)
 
     finally:
         if conversation:
@@ -621,6 +634,10 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                 print("Conversation cleanup completed")
             except Exception as e:
                 print(f"Error in conversation cleanup: {str(e)}")
+        
+        # Final cleanup - ensure call status is removed even if there were errors
+        if call_sid:
+            cleanup_call_status(call_sid)
 
 @app.get("/call-status/{call_sid}")
 async def get_call_status(call_sid: str, current_user: dict = Depends(get_current_user)):
@@ -649,7 +666,11 @@ async def end_call(call_sid: str, request: Request = None, twilio_client: Client
             "ended_reason": reason or "manual",
         })
         CALL_STATUS[call_sid] = existing
-        return JSONResponse({"success": True, "status": CALL_STATUS[call_sid]["status"], "details": CALL_STATUS[call_sid]})
+        
+        # Clean up the call status entry to prevent memory growth
+        cleanup_call_status(call_sid)
+        
+        return JSONResponse({"success": True, "status": "ended", "details": {"status": "ended", "ended_reason": reason or "manual"}})
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
 
