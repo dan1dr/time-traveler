@@ -73,6 +73,15 @@ if not DEBUG_LOGS:
     uvicorn_access_logger = logging.getLogger("uvicorn.access")
     uvicorn_access_logger.addFilter(CallStatusFilter())
 
+# Always log important startup information
+print(f"🔧 DEBUG_LOGS enabled: {DEBUG_LOGS}")
+print(f"🌐 ALLOWED_ORIGINS: {ALLOWED_ORIGINS}")
+print(f"🔑 Environment variables loaded:")
+print(f"   - ELEVENLABS_API_KEY: {'✅ Set' if ELEVENLABS_API_KEY else '❌ Missing'}")
+print(f"   - TWILIO_ACCOUNT_SID: {'✅ Set' if TWILIO_ACCOUNT_SID else '❌ Missing'}")
+print(f"   - TWILIO_PHONE_NUMBER: {'✅ Set' if TWILIO_PHONE_NUMBER else '❌ Missing'}")
+print(f"   - JWT_SECRET: {'✅ Set' if os.getenv('JWT_SECRET') else '❌ Missing'}")
+
 # CORS Configuration
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 
@@ -85,8 +94,10 @@ app.add_middleware(
 )
 
 # Debug logging for CORS
-if DEBUG_LOGS:
-    print(f"🔗 CORS configured for origins: {ALLOWED_ORIGINS}")
+print(f"🔗 CORS configured for origins: {ALLOWED_ORIGINS}")
+print(f"🔗 CORS methods: GET, POST, OPTIONS")
+print(f"🔗 CORS headers: *")
+print(f"🔗 CORS credentials: True")
 
 # Initialize voice and agent managers globally
 voice_manager = VoiceManager()
@@ -161,13 +172,41 @@ async def root():
 async def health_check():
     return {"status": "healthy", "message": "Server is running"}
 
+@app.options("/outbound-call")
+async def outbound_call_options(request: Request):
+    """Handle CORS preflight requests for outbound-call endpoint"""
+    print(f"🔍 OPTIONS request received for /outbound-call")
+    print(f"🔍 Origin: {request.headers.get('origin', 'No origin header')}")
+    print(f"🔍 Access-Control-Request-Method: {request.headers.get('access-control-request-method', 'No method header')}")
+    print(f"🔍 Access-Control-Request-Headers: {request.headers.get('access-control-request-headers', 'No headers header')}")
+    
+    # Return a proper CORS preflight response
+    from fastapi.responses import Response
+    response = Response()
+    response.headers["Access-Control-Allow-Origin"] = "*"  # Allow all origins for debugging
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Access-Control-Max-Age"] = "86400"
+    
+    print(f"✅ OPTIONS response prepared with CORS headers")
+    return response
+
 @app.get("/config")
 async def get_configuration():
     """Get server configuration for debugging/monitoring"""
     return {
         "jwt": get_jwt_config(),
         "rate_limiting": get_rate_limit_config(),
-        "debug_logs": DEBUG_LOGS
+        "debug_logs": DEBUG_LOGS,
+        "environment_variables": {
+            "ELEVENLABS_API_KEY": "✅ Set" if ELEVENLABS_API_KEY else "❌ Missing",
+            "TWILIO_ACCOUNT_SID": "✅ Set" if TWILIO_ACCOUNT_SID else "❌ Missing", 
+            "TWILIO_PHONE_NUMBER": "✅ Set" if TWILIO_PHONE_NUMBER else "❌ Missing",
+            "JWT_SECRET": "✅ Set" if os.getenv('JWT_SECRET') else "❌ Missing",
+            "DEBUG_LOGS": DEBUG_LOGS,
+            "ALLOWED_ORIGINS": ALLOWED_ORIGINS
+        }
     }
 
 # Authentication Endpoints
@@ -229,6 +268,11 @@ async def outbound_call(
     twilio_client: Client = Depends(get_twilio_client),
     current_user: dict = Depends(rate_limit_dependency)
 ):
+    print(f"📞 POST /outbound-call received")
+    print(f"🔍 Request headers: {dict(request.headers) if request else 'No request object'}")
+    print(f"🔍 Call request: {call_request}")
+    print(f"🔍 Current user: {current_user}")
+    
     try:
         # Check configuration
         if not TWILIO_PHONE_NUMBER:
