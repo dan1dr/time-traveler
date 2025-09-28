@@ -80,45 +80,13 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS", "PUT", "DELETE"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
-    expose_headers=["*"],
 )
 
 # Debug logging for CORS
 if DEBUG_LOGS:
     print(f"🔗 CORS configured for origins: {ALLOWED_ORIGINS}")
-
-# Add a global OPTIONS handler as fallback
-@app.options("/{path:path}")
-async def options_handler(path: str, request: Request):
-    """Global OPTIONS handler for CORS preflight requests"""
-    origin = request.headers.get("origin")
-    if DEBUG_LOGS:
-        print(f"🌐 OPTIONS request for {path} from origin: {origin}")
-    
-    # Check if origin is allowed
-    if origin in ALLOWED_ORIGINS or "*" in ALLOWED_ORIGINS:
-        return JSONResponse(
-            {"message": "OK"},
-            headers={
-                "Access-Control-Allow-Origin": origin,
-                "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT, DELETE",
-                "Access-Control-Allow-Headers": "*",
-                "Access-Control-Allow-Credentials": "true",
-                "Access-Control-Max-Age": "86400"
-            }
-        )
-    else:
-        if DEBUG_LOGS:
-            print(f"❌ CORS blocked: origin {origin} not in allowed origins {ALLOWED_ORIGINS}")
-        return JSONResponse(
-            {"error": "CORS not allowed"},
-            status_code=400,
-            headers={
-                "Access-Control-Allow-Origin": "null"
-            }
-        )
 
 # Initialize voice and agent managers globally
 voice_manager = VoiceManager()
@@ -199,19 +167,10 @@ async def get_configuration():
     return {
         "jwt": get_jwt_config(),
         "rate_limiting": get_rate_limit_config(),
-        "debug_logs": DEBUG_LOGS,
-        "cors": {
-            "allowed_origins": ALLOWED_ORIGINS,
-            "cors_enabled": True
-        }
+        "debug_logs": DEBUG_LOGS
     }
 
 # Authentication Endpoints
-@app.options("/auth/login")
-async def auth_login_options():
-    """Handle CORS preflight for auth/login endpoint"""
-    return JSONResponse({"message": "OK"})
-
 @app.post("/auth/login")
 async def login():
     """Generate a JWT token for API access"""
@@ -262,11 +221,6 @@ async def get_rate_limit_status_endpoint(current_user: dict = Depends(get_curren
             "session_id": current_user["session_id"]
         }
     }
-
-@app.options("/outbound-call")
-async def outbound_call_options():
-    """Handle CORS preflight for outbound-call endpoint"""
-    return JSONResponse({"message": "OK"})
 
 @app.post("/outbound-call")
 async def outbound_call(
@@ -402,7 +356,26 @@ async def outbound_call_twiml(
 
     # Create a Stream with custom parameters for language and year
     # Note: Twilio doesn't pass query parameters to WebSocket, so we use custom parameters instead
-    websocket_url = f"wss://{request.headers.get('host')}/outbound-media-stream"
+    
+    # Get the host from request headers
+    host = request.headers.get('host')
+    print(f"🔍 Request host header: {host}")
+    
+    # Construct WebSocket URL - handle both local and production environments
+    if 'localhost' in host or '127.0.0.1' in host:
+        # Local development - use ngrok URL if available
+        ngrok_url = os.getenv("SERVER_DOMAIN")
+        if ngrok_url:
+            websocket_url = f"wss://{ngrok_url.replace('https://', '').replace('http://', '')}/outbound-media-stream"
+            print(f"🔧 Local development - Using ngrok WebSocket URL: {websocket_url}")
+        else:
+            websocket_url = f"wss://{host}/outbound-media-stream"
+            print(f"⚠️  Local development - No SERVER_DOMAIN set, using host: {websocket_url}")
+    else:
+        # Production - use the request host
+        websocket_url = f"wss://{host}/outbound-media-stream"
+        print(f"🚀 Production - Using host WebSocket URL: {websocket_url}")
+    
     stream = Stream(url=websocket_url)
     
     # Add custom parameters that Twilio will pass in the 'start' event
@@ -416,16 +389,33 @@ async def outbound_call_twiml(
     # based on IP or timing it is a hint the call is ringing/connecting. This endpoint is called by Twilio.
     # If desired, we could accept an optional callSid in query and mark it; skipping to avoid trust issues.
 
-    connect.append(stream)
-    response.append(connect)
-
-    return HTMLResponse(content=str(response), media_type="application/xml")
+    try:
+        connect.append(stream)
+        response.append(connect)
+        
+        twiml_content = str(response)
+        print(f"📄 Generated TwiML content: {twiml_content}")
+        
+        return HTMLResponse(content=twiml_content, media_type="application/xml")
+    except Exception as e:
+        print(f"❌ Error generating TwiML: {str(e)}")
+        # Return a simple error TwiML
+        error_response = VoiceResponse()
+        error_response.say("I apologize, but I'm experiencing technical difficulties. Please try calling again in a few moments.")
+        error_response.hangup()
+        return HTMLResponse(content=str(error_response), media_type="application/xml")
 
 @app.websocket("/outbound-media-stream")
 async def handle_outbound_media_stream(websocket: WebSocket):
-    await websocket.accept()
-    
-    print(f"Outbound WebSocket connection opened - waiting for Twilio start event with custom parameters...")
+    try:
+        await websocket.accept()
+        print(f"✅ Outbound WebSocket connection opened successfully")
+        print(f"🔗 WebSocket client: {websocket.client}")
+        print(f"📡 WebSocket URL: {websocket.url}")
+        print(f"⏳ Waiting for Twilio start event with custom parameters...")
+    except Exception as e:
+        print(f"❌ Failed to accept WebSocket connection: {str(e)}")
+        return
 
     # Variables to track the call
     stream_sid = None
