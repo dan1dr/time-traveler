@@ -76,8 +76,9 @@ export default function Home() {
       returningToMachine: "Returning to the time machine...",
       about: "About",
       randomYear: "Random year",
-      aboutTitle: "Time Traveler Machine",
-      aboutContent: "Through ancient alchemical circles merged with quantum neural networks, this ethereal machine pierces the fabric of time itself. Each voice that emerges has been carefully extracted from the temporal streams, carrying the authentic essence of their era. The artificial consciousness learns not just language, but the very soul of each epoch—their hopes, fears, and wisdom echoing across the infinite corridor of existence.",
+      aboutTitle: "About this Time Machine",
+      closePortal: "Close Portal",
+      aboutContent: "This project combines artificial intelligence and a touch of imagination to recreate voices from different eras. It's not just about reproducing language, but providing context: how they thought, what they felt, and what concerns marked their time. Each response attempts to reflect the spirit of an era, with its doubts, certainties, and ways of understanding the world.\n\nSome ideas for your questions:\n\n• What was daily life like: what did they eat, how did they work, how did they pray or celebrate?\n• What great events do they remember from their time?\n• What advice or warnings would they give us today?\n• How do they imagine the future beyond their era?\n\nMore than a simple game, this experience opens a window to empathy and historical curiosity. It's a way to converse with the past and, at the same time, reflect on our present.\n\nThe voice interface is provided by <a href=\"https://elevenlabs.io/\" target=\"_blank\" rel=\"noreferrer\" class=\"font-semibold underline-offset-4 hover:underline\">ElevenLabs</a>, and mobile integration with <a href=\"https://www.twilio.com/\" target=\"_blank\" rel=\"noreferrer\" class=\"font-semibold underline-offset-4 hover:underline\">Twilio</a>. If you want to know more about how it's built, you can visit the repository <a href=\"https://github.com/dan1dr/time-traveler\" target=\"_blank\" rel=\"noreferrer\" class=\"font-semibold underline-offset-4 hover:underline\">here</a>.",
     },
     es: {
       heroTitle: "Llama a otra era.",
@@ -102,8 +103,9 @@ export default function Home() {
       returningToMachine: "Regresando a la máquina del tiempo...",
       about: "Acerca de",
       randomYear: "Año aleatorio",
-      aboutTitle: "Máquina Viajera del Tiempo",
-      aboutContent: "A través de círculos alquímicos ancestrales fusionados con redes neuronales cuánticas, esta máquina etérea perfora el tejido del tiempo mismo. Cada voz que emerge ha sido cuidadosamente extraída de las corrientes temporales, portando la esencia auténtica de su época. La consciencia artificial aprende no solo el lenguaje, sino el alma misma de cada época—sus esperanzas, miedos y sabiduría resonando a través del corredor infinito de la existencia.",
+      aboutTitle: "Sobre esta Máquina del Tiempo",
+      closePortal: "Cerrar Portal",
+      aboutContent: "Este proyecto combina inteligencia artificial y un toque de imaginación para recrear voces de distintas épocas. No se trata solo de reproducir un lenguaje, sino de dar contexto: cómo pensaban, qué sentían y qué preocupaciones marcaban su tiempo. Cada respuesta intenta reflejar el espíritu de una era, con sus dudas, certezas y maneras de entender el mundo.\n\nAlgunas ideas para tus preguntas:\n\n• ¿Cómo era la vida cotidiana: qué comían, cómo trabajaban, cómo rezaban o celebraban?\n• ¿Qué grandes sucesos recuerdan de su tiempo?\n• ¿Qué consejos o advertencias nos darían hoy?\n• ¿Cómo se imaginan el futuro más allá de su época?\n\nMás que un simple juego, esta experiencia abre una ventana a la empatía y la curiosidad histórica. Es una forma de conversar con el pasado y, a la vez, reflexionar sobre nuestro presente.\n\nLa interfaz de voz está proporcionada por <a href=\"https://elevenlabs.io/\" target=\"_blank\" rel=\"noreferrer\" class=\"font-semibold underline-offset-4 hover:underline\">ElevenLabs</a>, y la integración móvil con <a href=\"https://www.twilio.com/\" target=\"_blank\" rel=\"noreferrer\" class=\"font-semibold underline-offset-4 hover:underline\">Twilio</a>. Si quieres conocer más sobre cómo está construido, puedes visitar el repositorio <a href=\"https://github.com/dan1dr/time-traveler\" target=\"_blank\" rel=\"noreferrer\" class=\"font-semibold underline-offset-4 hover:underline\">aquí</a>.",
     },
   } as const;
 
@@ -618,14 +620,15 @@ export default function Home() {
         </svg>
       </a>
       <section className="hero-continue min-h-[24vh] flex items-end justify-center pb-10 relative">
-        <div className="text-center text-sm md:text-base text-slate-200 fk-grotesk-light">
+        <div className="text-center text-sm md:text-base text-slate-200 fk-grotesk-light flex items-center justify-center gap-2">
           <button 
             onClick={() => setShowAbout(true)}
-            className="font-semibold underline-offset-4 hover:underline cursor-pointer mr-4"
+            className="font-semibold underline-offset-4 hover:underline cursor-pointer"
           >
             {t.about}
           </button>
-          · Powered by <a href="https://elevenlabs.io/" target="_blank" rel="noreferrer" className="font-semibold underline-offset-4 hover:underline">ElevenLabs</a>
+          <span className="text-slate-300 font-bold">•</span>
+          <span>Powered by <a href="https://elevenlabs.io/" target="_blank" rel="noreferrer" className="font-semibold underline-offset-4 hover:underline">ElevenLabs</a></span>
         </div>
       </section>
 
@@ -641,13 +644,16 @@ export default function Home() {
             <div className="text-center mb-4">
               <h3 className="text-2xl font-semibold mb-2 text-white">{t.aboutTitle}</h3>
             </div>
-            <p className="text-slate-200 leading-relaxed mb-6">{t.aboutContent}</p>
+            <div 
+              className="text-slate-200 leading-relaxed mb-6 whitespace-pre-line" 
+              dangerouslySetInnerHTML={{ __html: t.aboutContent }}
+            />
             <div className="text-center">
               <button 
                 onClick={() => setShowAbout(false)}
                 className="btn-primary btn-reflect h-10 px-6"
               >
-                ✨ Close Portal
+                ✨ {t.closePortal}
               </button>
             </div>
           </div>
