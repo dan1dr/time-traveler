@@ -6,6 +6,9 @@ import uvicorn
 import base64
 import logging
 from dotenv import load_dotenv
+
+# Add shared_py to Python path
+sys.path.append(os.path.join(os.path.dirname(__file__), 'shared_py'))
 from fastapi import FastAPI, Request, WebSocket, Form, Depends, HTTPException, Header
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,9 +34,9 @@ from auth import create_jwt_token, get_current_user, get_jwt_config
 from rate_limiting import rate_limit_dependency, get_rate_limit_status, get_rate_limit_config
 
 # Import voice and agent managers
-from shared_py.voice_manager import VoiceManager
-from shared_py.agent_manager import AgentManager
-from shared_py.first_message_manager import FirstMessageManager
+from voice_manager import VoiceManager
+from agent_manager import AgentManager
+from first_message_manager import FirstMessageManager
 
 load_dotenv()
 
