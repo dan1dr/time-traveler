@@ -73,6 +73,9 @@ if not DEBUG_LOGS:
     uvicorn_access_logger = logging.getLogger("uvicorn.access")
     uvicorn_access_logger.addFilter(CallStatusFilter())
 
+# CORS Configuration
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+
 # Always log important startup information
 print(f"🔧 DEBUG_LOGS enabled: {DEBUG_LOGS}")
 print(f"🌐 ALLOWED_ORIGINS: {ALLOWED_ORIGINS}")
@@ -81,9 +84,6 @@ print(f"   - ELEVENLABS_API_KEY: {'✅ Set' if ELEVENLABS_API_KEY else '❌ Miss
 print(f"   - TWILIO_ACCOUNT_SID: {'✅ Set' if TWILIO_ACCOUNT_SID else '❌ Missing'}")
 print(f"   - TWILIO_PHONE_NUMBER: {'✅ Set' if TWILIO_PHONE_NUMBER else '❌ Missing'}")
 print(f"   - JWT_SECRET: {'✅ Set' if os.getenv('JWT_SECRET') else '❌ Missing'}")
-
-# CORS Configuration
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 
 app.add_middleware(
     CORSMiddleware,
