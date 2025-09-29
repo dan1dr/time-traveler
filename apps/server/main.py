@@ -5,6 +5,7 @@ import traceback
 import uvicorn
 import base64
 import logging
+import asyncio
 from dotenv import load_dotenv
 
 # Add shared_py to Python path
@@ -127,6 +128,24 @@ def cleanup_call_status(call_sid: str):
         del CALL_STATUS[call_sid]
         if DEBUG_LOGS:
             print(f"🧹 Cleaned up call status for {call_sid}")
+
+def schedule_call_status_cleanup(call_sid: str, delay_seconds: int = 60):
+    """Schedule delayed cleanup so clients can still observe final status."""
+    async def _delayed_cleanup():
+        try:
+            if DEBUG_LOGS:
+                print(f"⏳ Scheduling cleanup for {call_sid} in {delay_seconds}s")
+            await asyncio.sleep(delay_seconds)
+            cleanup_call_status(call_sid)
+        except Exception as e:
+            if DEBUG_LOGS:
+                print(f"⚠️  Error during scheduled cleanup for {call_sid}: {e}")
+
+    try:
+        asyncio.create_task(_delayed_cleanup())
+    except RuntimeError:
+        # If not in an event loop (e.g., during shutdown), fall back to immediate cleanup
+        cleanup_call_status(call_sid)
 
 # Rate limiting functions are now in rate_limiting.py
 
@@ -684,8 +703,8 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                         "status": "ended",
                     })
                     CALL_STATUS[call_sid] = existing
-                    # Clean up the call status entry to prevent memory growth
-                    cleanup_call_status(call_sid)
+                    # Delay cleanup to allow frontend pollers to read final state
+                    schedule_call_status_cleanup(call_sid)
                 if conversation:
                     try:
                         conversation.end_session()
@@ -710,9 +729,8 @@ async def handle_outbound_media_stream(websocket: WebSocket):
             except Exception as e:
                 print(f"Error in conversation cleanup: {str(e)}")
         
-        # Final cleanup - ensure call status is removed even if there were errors
-        if call_sid:
-            cleanup_call_status(call_sid)
+        # Do not cleanup immediately; status cleanup is scheduled where appropriate
+        pass
 
 @app.get("/call-status/{call_sid}")
 async def get_call_status(call_sid: str, current_user: dict = Depends(get_current_user)):
@@ -741,9 +759,8 @@ async def end_call(call_sid: str, request: Request = None, twilio_client: Client
             "ended_reason": reason or "manual",
         })
         CALL_STATUS[call_sid] = existing
-        
-        # Clean up the call status entry to prevent memory growth
-        cleanup_call_status(call_sid)
+        # Delay cleanup so clients can read the final state at least once
+        schedule_call_status_cleanup(call_sid)
         
         return JSONResponse({"success": True, "status": "ended", "details": {"status": "ended", "ended_reason": reason or "manual"}})
     except Exception as e:

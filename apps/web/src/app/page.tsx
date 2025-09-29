@@ -448,6 +448,12 @@ export default function Home() {
     pollIntervalRef.current = window.setInterval(async () => {
       try {
         const res = await makeAuthenticatedRequest(`/call-status/${callSidToTrack}`);
+        // If backend already cleaned up after we observed 'answered', treat 404 as ended
+        if (res.status === 404 && answered) {
+          clearTimers();
+          showFinalMessageAndReset(t.callEnded);
+          return;
+        }
         if (!res.ok) return;
         const data = await res.json();
         const status = data.status as string;
