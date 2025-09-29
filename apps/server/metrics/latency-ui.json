@@ -1,0 +1,11 @@
+{
+  "call 1 model 1": { "avg_llm": 731.0, "avg_tts": 113.67 },
+  "call 2 model 1": { "avg_llm": 593.33, "avg_tts": 130.0 },
+  "call 3 model 1": { "avg_llm": 781.33, "avg_tts": 155.33 },
+  "call 1 model 2": { "avg_llm": 547.33, "avg_tts": 101.0 },
+  "call 2 model 2": { "avg_llm": 464.0, "avg_tts": 112.0 },
+  "call 3 model 2": { "avg_llm": 595.33, "avg_tts": 111.33 },
+  "call 1 model 3": { "avg_llm": 438.33, "avg_tts": 143.67 },
+  "call 2 model 3": { "avg_llm": 516.0, "avg_tts": 138.33 },
+  "call 3 model 3": { "avg_llm": 531.0, "avg_tts": 136.33 }
+}
