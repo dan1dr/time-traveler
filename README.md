@@ -353,6 +353,17 @@ The project includes **49 unit tests** covering all core logic with comprehensiv
 **AI Renaissance (2035, English):**
 > "The neural networks whisper such wisdom... My AI companion suggests we consider how your primitive devices evolved into our symbiotic consciousness."
 
+## 📊 Performance & Latency Testing
+
+Performance metrics and latency testing results are available in [`apps/server/metrics/`](apps/server/metrics/README.md), including:
+
+- **Setup latency**: WebSocket connection to first audible audio
+- **Turn-by-turn metrics**: User speech → agent response timing
+- **Model comparison**: LLM and TTS performance across different agents
+- **Audio streaming**: Chunk cadence and quality metrics
+
+See the metrics folder for detailed test setup, methodology, and results.
+
 ## 🚀 Future Improvements
 
 1. **Dependency Injection**: Use FastAPI's dependency injection more extensively
