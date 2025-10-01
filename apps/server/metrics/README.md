@@ -11,6 +11,7 @@
   - **Model 1**: Gemini Flash 2.0
   - **Model 2**: Claude 3 Haiku
   - **Model 3**: GPT-OSS 120B
+  - **Model 4**: GPT-5 nano
 - **Runs**: 3 calls per model (9 total)
 
 ### Method (metrics captured)
@@ -23,10 +24,12 @@
 
 ### Results (simple)
 - **First audible audio**: ~1.5 s end-to-end
-  - Decomposed as LLM+TTS ~1.25–1.30 s + ~0.27–0.37 s transport/boot/buffering
-- **Between-turn pacing (avg & p95 gaps)**: very similar across all three; only small deltas
-  - **Claude 3 Haiku**: slightly tighter average/tail gaps
-  - **GPT-OSS 120B**: slightly lower startup overhead (earliest first sound)
+  - Models 1–3: LLM+TTS ~1.25–1.30 s + ~0.27–0.37 s transport/boot/buffering.
+  - Model 4 (GPT-5 nano): avg LLM is higher than others (~1.09 s vs ~0.50–0.70 s), TTS ~0.18 s, so LLM+TTS ~1.27 s; startup overhead is higher too (~0.47 s), placing first audio toward the upper end of the same range.
+- **Between-turn pacing (avg & p95 gaps)**: very similar across all; only small deltas
   - **Gemini Flash 2.0**: modestly larger average gap
+  - **GPT-OSS 120B**: slightly lower startup overhead (earliest first sound)
+  - **Claude 3 Haiku**: slightly tighter average/tail gaps
+  - **GPT-5 nano**: mid-pack average gaps with a slightly heavier p95 tail (occasional longer pauses)
 - **Conversation span & verbosity**: similar (≈3–4 sentences per call)
-- **Bottom line**: No meaningful performance separation with just 3 calls per model; differences are minor and not statistically significant for this sample
+- **Bottom line**: GPT-5 nano slightly higher LLM latency and higher overhead, but otherwise no meaningful performance separation for rest of models.

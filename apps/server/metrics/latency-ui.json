@@ -7,5 +7,8 @@
   "call 3 model 2": { "avg_llm": 595.33, "avg_tts": 111.33 },
   "call 1 model 3": { "avg_llm": 438.33, "avg_tts": 143.67 },
   "call 2 model 3": { "avg_llm": 516.0, "avg_tts": 138.33 },
-  "call 3 model 3": { "avg_llm": 531.0, "avg_tts": 136.33 }
+  "call 3 model 3": { "avg_llm": 531.0, "avg_tts": 136.33 },
+  "call 1 model 4": { "avg_llm": 1036.67, "avg_tts": 126.5 },
+  "call 2 model 4": { "avg_llm": 938.33, "avg_tts": 240.0 },
+  "call 3 model 4": { "avg_llm": 1300.0, "avg_tts": 161.5 }
 }
