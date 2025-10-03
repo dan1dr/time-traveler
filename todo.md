@@ -120,8 +120,10 @@ The time traveler agent system is now **FULLY PRODUCTION-READY** with:
 - ✅ Complete documentation and setup guides
 
 todos:
--fix false 401 unathorized when call ended or unanswered in the logs
--implement stars animation
--testing models and latency obtained - maybe change llm providers and/or prompt
+OK-fix false 401 unathorized when call ended or unanswered in the logs
+OK-implement stars animation
+OK-testing models and latency obtained - maybe change llm providers and/or prompt
+improve system prompt across agents
+test my own voice or rm
 
 
