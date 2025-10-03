@@ -23,8 +23,20 @@
       "name": "Spanish Voice 4",
       "gender": "male",
       "age_range": "middle-aged"
+    },
+    {
+      "id": "7ilYbYb99yBZGMUUKSaf",
+      "name": "Spanish Voice 5",
+      "gender": "male",
+      "age_range": "middle-aged"
+    },
+    {
+      "id": "58x6ap3aNRaKbGgexbO0",
+      "name": "Spanish Voice 5",
+      "gender": "male",
+      "age_range": "young adult"
     }
-  ],
+],
   "english": [
     {
       "id": "aOZ9Pl8uWUTet0DS7PYP",
@@ -47,6 +59,12 @@
     {
       "id": "t9pa8vZ7tCoTLCLirl6c",
       "name": "English Voice 4",
+      "gender": "female",
+      "age_range": "middle-aged"
+    },
+    {
+      "id": "sLfduly0sixkh8riDzed",
+      "name": "English Voice 5",
       "gender": "female",
       "age_range": "middle-aged"
     }
