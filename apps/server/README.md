@@ -239,7 +239,7 @@ The system automatically passes these variables to your ElevenLabs agent, allowi
 }
 ```
 
-**💡 If you want to check the system prompt I used, see** [here](SYSTEM_PROMPT_TEMPLATE.txt). You can also change system prompts across agents to increase variability, while you can also introduce higher temperature values or even change LLM providers as I did (have fun touching those).
+**💡 If you want to check a previous prompt template we used, see** [here](SYSTEM_PROMPT_TEMPLATE.txt). You can also change system prompts across agents to increase variability, while you can also introduce higher temperature values or even change LLM providers as I did (have fun touching those).
 
 ### Conversation Settings
 - Enable barge-in
