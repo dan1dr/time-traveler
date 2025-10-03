@@ -92,7 +92,7 @@ ERA_CONFIGS = {
             ]
         },
         voice_settings={
-            "stability": 0.6,
+            "stability": 0.5,
             "similarity_boost": 0.75,
             "style": 0.7,
             "speed": 1.05  # Imperial gravitas, measured pace
@@ -119,7 +119,7 @@ ERA_CONFIGS = {
             ]
         },
         voice_settings={
-            "stability": 0.75,
+            "stability": 0.5,
             "similarity_boost": 0.8,
             "style": 0.65,
             "speed": 0.98  # Monastic calm, frontier uncertainty
@@ -146,7 +146,7 @@ ERA_CONFIGS = {
             ]
         },
         voice_settings={
-            "stability": 0.78,
+            "stability": 0.6,
             "similarity_boost": 0.82,
             "style": 0.7,
             "speed": 1.0  # Balanced, dignified medieval tone
@@ -173,7 +173,7 @@ ERA_CONFIGS = {
             ]
         },
         voice_settings={
-            "stability": 0.8,
+            "stability": 0.6,
             "similarity_boost": 0.8,
             "style": 0.68,
             "speed": 0.98  # Somber, reflective tone
@@ -227,7 +227,7 @@ ERA_CONFIGS = {
             ]
         },
         voice_settings={
-            "stability": 0.8,
+            "stability": 0.6,
             "similarity_boost": 0.8,
             "style": 0.9,
             "speed": 1.0  # Refined but not too slow
@@ -256,7 +256,7 @@ ERA_CONFIGS = {
             ]
         },
         voice_settings={
-            "stability": 0.75,
+            "stability": 0.5,
             "similarity_boost": 0.7,
             "style": 0.6,
             "speed": 1.15  # Energetic industrial pace
@@ -283,7 +283,7 @@ ERA_CONFIGS = {
             ]
         },
         voice_settings={
-            "stability": 0.7,
+            "stability": 0.4,
             "similarity_boost": 0.7,
             "style": 0.55,
             "speed": 1.08  # Urgent, modern, but still human
@@ -310,7 +310,7 @@ ERA_CONFIGS = {
             ]
         },
         voice_settings={
-            "stability": 0.72,
+            "stability": 0.30,
             "similarity_boost": 0.72,
             "style": 0.6,
             "speed": 1.05  # Tense but steady
@@ -337,10 +337,10 @@ ERA_CONFIGS = {
             ]
         },
         voice_settings={
-            "stability": 0.68,
+            "stability": 0.35,
             "similarity_boost": 0.68,
             "style": 0.6,
-            "speed": 1.12  # Energetic dot-com optimism
+            "speed": 1.15  # Energetic dot-com optimism
         },
         context_hint="WWW, PCs, deregulation, global supply chains, early mobile, open-source momentum",
         time_period="Globalization & Early Internet"
@@ -364,7 +364,7 @@ ERA_CONFIGS = {
             ]
         },
         voice_settings={
-            "stability": 0.66,
+            "stability": 0.35,
             "similarity_boost": 0.7,
             "style": 0.62,
             "speed": 1.15  # Fast, always online
@@ -392,10 +392,10 @@ ERA_CONFIGS = {
             ]
         },
         voice_settings={
-            "stability": 0.7,
+            "stability": 0.5,
             "similarity_boost": 0.8,
             "style": 0.4,
-            "speed": 1.1  # AI precision with good pace
+            "speed": 1.15  # AI precision with good pace
         },
         context_hint="AI-human collaboration, neural enhancement, algorithmic thinking, synthetic consciousness emergence",
         time_period="AI Renaissance"
@@ -420,10 +420,10 @@ ERA_CONFIGS = {
             ]
         },
         voice_settings={
-            "stability": 0.75,
+            "stability": 0.5,
             "similarity_boost": 0.7,
             "style": 0.6,
-            "speed": 1.0  # Cosmic contemplation but not too slow
+            "speed": 1.1  # Cosmic contemplation but not too slow
         },
         context_hint="multi-planetary civilization, space-born generations, cosmic perspective, terraforming mastery",
         time_period="Interplanetary Era"
@@ -448,10 +448,10 @@ ERA_CONFIGS = {
             ]
         },
         voice_settings={
-            "stability": 0.8,
+            "stability": 0.4,
             "similarity_boost": 0.6,
             "style": 0.9,
-            "speed": 0.95  # Ethereal but not too slow
+            "speed": 1.0  # Ethereal but not too slow
         },
         context_hint="post-biological existence, consciousness uploading, reality manipulation, dimensional transcendence",
         time_period="Transcendent Age"
@@ -476,10 +476,10 @@ ERA_CONFIGS = {
             ]
         },
         voice_settings={
-            "stability": 0.9,
+            "stability": 0.,
             "similarity_boost": 0.5,
             "style": 1.0,
-            "speed": 0.9  # Timeless, profound but not too slow
+            "speed": 1.0  # Timeless, profound but not too slow
         },
         context_hint="galactic consciousness, reality as substrate, time as dimension of choice, existence beyond comprehension",
         time_period="Far Future"
@@ -498,8 +498,8 @@ def get_era_config(year: int) -> Optional[EraConfig]:
         return ERA_CONFIGS[(2500, 3000)]
     
     # Default to ancient if year is before our mappings  
-    if year < 0:
-        return ERA_CONFIGS[(0, 500)]
+    if year < -1500:
+        return ERA_CONFIGS[(-1500, -800)]
     
     return None
 
