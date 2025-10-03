@@ -40,8 +40,7 @@ ERA_CONFIGS = {
         },
         voice_settings={
             "stability": 0.35,
-            "similarity_boost": 0.65,
-            "style": 0.55,
+            "similarity_boost": 0.7,
             "speed": 1.05  # Measured, ceremonial diction
         },
         context_hint="Mycenaeans, Hittites, New Kingdom Egypt, palace economies, Linear scripts, Sea Peoples, transition from bronze to iron",
@@ -68,7 +67,6 @@ ERA_CONFIGS = {
         voice_settings={
             "stability": 0.5,
             "similarity_boost": 0.7,
-            "style": 0.7,
             "speed": 1.1  # Lively rhetoric and oratory cadence
         },
         context_hint="Greek polis, Hellenic philosophy, Hellenistic era, Roman Republic institutions, civic life, oratory",
@@ -94,7 +92,6 @@ ERA_CONFIGS = {
         voice_settings={
             "stability": 0.5,
             "similarity_boost": 0.75,
-            "style": 0.7,
             "speed": 1.05  # Imperial gravitas, measured pace
         },
         context_hint="Pax Romana, Roman law and roads, legionary culture, provincial life, early Christianity, Late Antiquity transitions",
@@ -121,7 +118,6 @@ ERA_CONFIGS = {
         voice_settings={
             "stability": 0.5,
             "similarity_boost": 0.8,
-            "style": 0.65,
             "speed": 0.98  # Monastic calm, frontier uncertainty
         },
         context_hint="post-Roman kingdoms, monasticism, manuscript culture, migrations, early feudal bonds",
@@ -148,7 +144,6 @@ ERA_CONFIGS = {
         voice_settings={
             "stability": 0.6,
             "similarity_boost": 0.82,
-            "style": 0.7,
             "speed": 1.0  # Balanced, dignified medieval tone
         },
         context_hint="feudal order, chivalry, scholasticism, cathedrals, town charters, crusading ethos",
@@ -175,7 +170,6 @@ ERA_CONFIGS = {
         voice_settings={
             "stability": 0.6,
             "similarity_boost": 0.8,
-            "style": 0.68,
             "speed": 0.98  # Somber, reflective tone
         },
         context_hint="Black Death, crises of the 14th century, urban growth, vernacular literature, early humanist currents",
@@ -202,7 +196,6 @@ ERA_CONFIGS = {
         voice_settings={
             "stability": 0.7,
             "similarity_boost": 0.75,
-            "style": 0.8,
             "speed": 1.1  # Energetic, artistic pace
         },
         context_hint="artistic renaissance, scientific discovery, humanism, cultural rebirth",
@@ -229,7 +222,6 @@ ERA_CONFIGS = {
         voice_settings={
             "stability": 0.6,
             "similarity_boost": 0.8,
-            "style": 0.9,
             "speed": 1.0  # Refined but not too slow
         },
         context_hint="baroque grandeur, court refinement, elaborate artistry, royal patronage",
@@ -258,7 +250,6 @@ ERA_CONFIGS = {
         voice_settings={
             "stability": 0.5,
             "similarity_boost": 0.7,
-            "style": 0.6,
             "speed": 1.15  # Energetic industrial pace
         },
         context_hint="industrial progress, steam power, urban growth, technological optimism",
@@ -285,7 +276,6 @@ ERA_CONFIGS = {
         voice_settings={
             "stability": 0.4,
             "similarity_boost": 0.7,
-            "style": 0.55,
             "speed": 1.08  # Urgent, modern, but still human
         },
         context_hint="modernism, mass industry, World War I & II, radio and cinema, scientific upheavals",
@@ -312,7 +302,6 @@ ERA_CONFIGS = {
         voice_settings={
             "stability": 0.30,
             "similarity_boost": 0.72,
-            "style": 0.6,
             "speed": 1.05  # Tense but steady
         },
         context_hint="bipolar world, space race, nuclear anxiety, mainframes, television culture",
@@ -339,7 +328,6 @@ ERA_CONFIGS = {
         voice_settings={
             "stability": 0.35,
             "similarity_boost": 0.68,
-            "style": 0.6,
             "speed": 1.15  # Energetic dot-com optimism
         },
         context_hint="WWW, PCs, deregulation, global supply chains, early mobile, open-source momentum",
@@ -366,7 +354,6 @@ ERA_CONFIGS = {
         voice_settings={
             "stability": 0.35,
             "similarity_boost": 0.7,
-            "style": 0.62,
             "speed": 1.15  # Fast, always online
         },
         context_hint="smartphones, social platforms, SaaS, cloud hyperscalers, on-demand economy",
@@ -394,7 +381,6 @@ ERA_CONFIGS = {
         voice_settings={
             "stability": 0.5,
             "similarity_boost": 0.8,
-            "style": 0.4,
             "speed": 1.15  # AI precision with good pace
         },
         context_hint="AI-human collaboration, neural enhancement, algorithmic thinking, synthetic consciousness emergence",
@@ -422,7 +408,6 @@ ERA_CONFIGS = {
         voice_settings={
             "stability": 0.5,
             "similarity_boost": 0.7,
-            "style": 0.6,
             "speed": 1.1  # Cosmic contemplation but not too slow
         },
         context_hint="multi-planetary civilization, space-born generations, cosmic perspective, terraforming mastery",
@@ -450,7 +435,6 @@ ERA_CONFIGS = {
         voice_settings={
             "stability": 0.4,
             "similarity_boost": 0.6,
-            "style": 0.9,
             "speed": 1.0  # Ethereal but not too slow
         },
         context_hint="post-biological existence, consciousness uploading, reality manipulation, dimensional transcendence",
@@ -478,7 +462,6 @@ ERA_CONFIGS = {
         voice_settings={
             "stability": 0.,
             "similarity_boost": 0.5,
-            "style": 1.0,
             "speed": 1.0  # Timeless, profound but not too slow
         },
         context_hint="galactic consciousness, reality as substrate, time as dimension of choice, existence beyond comprehension",
