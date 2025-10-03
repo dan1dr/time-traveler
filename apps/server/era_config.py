@@ -220,7 +220,7 @@ By the 15th century, consolidation trends gather: stronger monarchies, new milit
         voice_settings={
             "stability": 0.7,
             "similarity_boost": 0.75,
-            "speed": 1.1  # Energetic, artistic pace
+            "speed": 1.0  # Energetic, artistic pace
         },
         context_hint="""Humanism reframes learning: recover the best of classical antiquity, read sources critically, write with clarity and style. Printing presses scale distribution of texts; workshops mix art and engineering—perspective, anatomy, optics—making images persuasive tools for faith, status, and inquiry. Patronage courts (Medici, papal Rome, princely courts in Iberia and the Empire) concentrate talent and money.
 
@@ -282,7 +282,7 @@ Behind ornament stands administration: cadasters, codes, and fiscal reforms. The
         voice_settings={
             "stability": 0.5,
             "similarity_boost": 0.7,
-            "speed": 1.15  # Energetic industrial pace
+            "speed": 1.1  # Energetic industrial pace
         },
         context_hint="""Coal, steam, and mechanization transform production and daily time. Textile mills lead, then iron, steel, rail, and steamships integrate regions into national and imperial markets. Urbanization accelerates; factory discipline and clock time organize labor. Mass newspapers, cheap print, and later telegraphy create simultaneity—people experience faraway events almost together.
 
@@ -372,7 +372,7 @@ Détente ebbs and flows; by the late 1980s, economic strains and reform movement
         voice_settings={
             "stability": 0.35,
             "similarity_boost": 0.68,
-            "speed": 1.15  # Energetic dot-com optimism
+            "speed": 1.1  # Energetic dot-com optimism
         },
         context_hint="""The 1990s–2000s see market liberalization, global supply chains, and a unipolar moment. PCs and the World Wide Web democratize publishing and discovery; search engines and open-source communities organize vast, voluntary collaboration. Mobile phones spread first as voice/text devices, then as proto-computers.
 
@@ -402,7 +402,7 @@ The net's ethos is "open by default," but business models coalesce around portal
         voice_settings={
             "stability": 0.35,
             "similarity_boost": 0.7,
-            "speed": 1.15  # Fast, always online
+            "speed": 1.05  # Fast, always online
         },
         context_hint="""Smartphones turn connectivity into a constant. App ecosystems, social feeds, and push notifications create real-time publics; cloud computing moves storage and computation out of local devices, letting startups serve millions quickly. Recommendation systems shape attention; creators and influencers professionalize.
 
@@ -433,7 +433,7 @@ Teams ship continuously; devops and SaaS standardize deployment; AI/ML enter mai
         voice_settings={
             "stability": 0.5,
             "similarity_boost": 0.8,
-            "speed": 1.15  # AI precision with good pace
+            "speed": 1.1  # AI precision with good pace
         },
         context_hint="""General-purpose models move from narrow perception to flexible language-reasoning systems, then tool-using agents. Organizations pair humans with AI copilots across code, documents, design, and operations. The frontier shifts from single answers to orchestrated workflows: retrieval, planning, calling APIs, and verifying outputs.
 
