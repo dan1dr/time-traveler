@@ -163,6 +163,28 @@ export function CountryPhoneInput({
   onOpenChange?: (open: boolean) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const validatePhoneNumber = (phone: string) => {
+    const cleaned = phone.replace(/[^\d+]/g, '');
+    
+    if (!cleaned.startsWith('+')) {
+      return 'Phone number must start with country code (e.g., +1234567890)';
+    }
+    
+    // Check total length (country code + phone number)
+    if (cleaned.length < 12 || cleaned.length > 16) {
+      return 'Phone number must be between 11-15 digits total (including country code)';
+    }
+    
+    // Check if it has valid country code (1-3 digits) and phone number (7-15 digits)
+    const phoneMatch = cleaned.match(/^\+(\d{1,3})(\d{7,15})$/);
+    if (!phoneMatch) {
+      return 'Invalid phone number format. Check country code and number length.';
+    }
+    
+    return null;
+  };
 
   const selected = useMemo(() => {
     return COUNTRIES.find((c) => c.dial === value.dial) || COUNTRIES[0];
@@ -174,16 +196,16 @@ export function CountryPhoneInput({
   }
 
   return (
-    <div className={`flex gap-2 overflow-visible`}>
+    <div className={`flex flex-col sm:flex-row gap-2 overflow-visible`}>
       <div className="relative">
         <button
           type="button"
-          className="input pr-10 flex items-center gap-2 min-w-[140px]"
+          className="input pr-10 flex items-center gap-2 min-w-full sm:min-w-[140px] text-sm"
           onClick={() => toggleOpen(!open)}
         >
-          <span className="text-xl">{selected.flag}</span>
-          <span className="text-sm text-slate-300">{selected.name}</span>
-          <span className="ml-auto text-white">{selected.dial}</span>
+          <span className="text-lg sm:text-xl">{selected.flag}</span>
+          <span className="text-xs sm:text-sm text-slate-300 truncate">{selected.name}</span>
+          <span className="ml-auto text-white text-sm">{selected.dial}</span>
         </button>
         {open && (
           <div className="absolute z-50 mt-1 w-[min(26rem,90vw)] max-h-72 overflow-auto crystal-panel crystal-scroll rounded-xl p-1 shadow-2xl">
@@ -207,17 +229,30 @@ export function CountryPhoneInput({
           </div>
         )}
       </div>
-      <input
-        type="tel"
-        inputMode="tel"
-        className="input w-full"
-        placeholder="Phone number"
-        value={value.number}
-        onChange={(e) => {
-          const digits = e.target.value.replace(/[^0-9]/g, "");
-          onChange({ dial: value.dial, number: digits });
-        }}
-      />
+      <div className="w-full">
+        <input
+          type="tel"
+          inputMode="tel"
+          className={`input w-full text-sm sm:text-base ${error ? 'border-red-400 focus:border-red-400' : ''}`}
+          placeholder="Phone number"
+          value={value.number}
+          onChange={(e) => {
+            const digits = e.target.value.replace(/[^0-9]/g, "");
+            const newValue = { dial: value.dial, number: digits };
+            onChange(newValue);
+            
+            // Validate the full phone number
+            const fullPhone = `${value.dial}${digits}`;
+            const validationError = validatePhoneNumber(fullPhone);
+            setError(validationError);
+          }}
+        />
+        {error && (
+          <div className="text-xs text-red-400 mt-1">
+            {error}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

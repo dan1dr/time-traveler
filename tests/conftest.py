@@ -8,12 +8,12 @@ from pathlib import Path
 
 # Add packages to Python path for testing
 project_root = Path(__file__).parent.parent
-sys.path.append(str(project_root / "packages" / "shared-py"))
+sys.path.append(str(project_root / "apps" / "server" / "shared_py"))
 sys.path.append(str(project_root / "apps" / "server"))
 
 import pytest
-from voice_manager import VoiceManager
-from agent_manager import AgentManager
+from shared_py.voice_manager import VoiceManager
+from shared_py.agent_manager import AgentManager
 
 
 @pytest.fixture

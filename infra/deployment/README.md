@@ -72,7 +72,7 @@ python-3.11
 3. **Select Repository**: Choose your `time-traveler` repository
 4. **Configure Build**:
    - **Root Directory**: `apps/server`
-   - **Build Command**: `pip install ../../packages/shared_py && pip install -r requirements.txt`
+   - **Build Command**: `pip install -r requirements.txt` (Railway auto-detects this)
    - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
 
 5. **Environment Variables**: Add these in Railway dashboard:
@@ -92,6 +92,14 @@ python-3.11
    TWILIO_AUTH_TOKEN=your_twilio_token
    TWILIO_PHONE_NUMBER=your_twilio_number
    
+   # JWT Authentication
+   JWT_SECRET=your_secure_jwt_secret_here
+   JWT_EXPIRATION_HOURS=24
+   
+   # Rate Limiting (Optional - defaults shown)
+   RATE_LIMIT_CALLS=5
+   RATE_LIMIT_WINDOW_MINUTES=5
+   
    # CORS Configuration (optional)
    ALLOWED_ORIGINS=https://your-app.vercel.app,https://your-app-git-dev.vercel.app
    
@@ -108,9 +116,16 @@ python-3.11
 # Test basic endpoint
 curl https://your-app.railway.app/
 
-# Test outbound call (replace with your Railway URL and phone)
+# Test health endpoint
+curl https://your-app.railway.app/health
+
+# Get JWT token
+TOKEN=$(curl -s -X POST https://your-app.railway.app/auth/login | jq -r '.token')
+
+# Test outbound call with authentication (replace with your Railway URL and phone)
 curl -X POST https://your-app.railway.app/outbound-call \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
   -d '{
     "to": "+1234567890",
     "lang": "en", 

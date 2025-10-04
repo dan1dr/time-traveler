@@ -1,7 +1,7 @@
 {
   "agents": [
     {
-      "name": "Gemini Flash 2.0",
+      "name": "Gemini Flash 2.5 Lite",
       "env_var": "ELEVENLABS_AGENT_ID_1"
     },
     {
@@ -9,8 +9,12 @@
       "env_var": "ELEVENLABS_AGENT_ID_2"
     },
     {
-      "name": "GPT5 nano",
+      "name": "GPT OSS 120b",
       "env_var": "ELEVENLABS_AGENT_ID_3"
+    },
+    {
+      "name": "Qwen3-30b",
+      "env_var": "ELEVENLABS_AGENT_ID_4"
     }
   ]
 }
