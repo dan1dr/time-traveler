@@ -67,9 +67,9 @@ class AgentManager:
         if not agent_id:
             print(f"⚠️ Warning: Environment variable {env_var} not set")
             # Fallback to base agent ID
-            fallback_id = os.getenv("ELEVENLABS_AGENT_ID")
+            fallback_id = os.getenv("ELEVENLABS_AGENT_ID_1")
             if fallback_id:
-                print(f"🔄 Using fallback agent ID from ELEVENLABS_AGENT_ID")
+                print(f"🔄 Using fallback agent ID from ELEVENLABS_AGENT_ID_1")
             return fallback_id
         
         return agent_id

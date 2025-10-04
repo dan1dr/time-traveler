@@ -6,6 +6,7 @@ import uvicorn
 import base64
 import logging
 import asyncio
+import time
 from dotenv import load_dotenv
 
 # Add shared_py to Python path
@@ -23,6 +24,7 @@ from twilio_audio import TwilioAudioInterface
 from starlette.websockets import WebSocketDisconnect, WebSocketState
 from urllib.parse import quote
 from pydantic import BaseModel, validator
+from typing import Optional
 from era_config import get_era_session_variables
 from errors import (
     TimeTravelerError, PhoneNumberError, TwilioServiceError, 
@@ -42,6 +44,8 @@ from first_message_manager import FirstMessageManager
 load_dotenv()
 
 DEBUG_LOGS = os.getenv("DEBUG_LOGS", "false").lower() == "true"
+METRICS_DIR = os.path.join(os.path.dirname(__file__), "metrics")
+METRICS_FILE = os.path.join(METRICS_DIR, "latency.ndjson")
 
 # Load environment variables
 ELEVENLABS_AGENT_ID_1 = os.getenv("ELEVENLABS_AGENT_ID_1")
@@ -147,6 +151,16 @@ def schedule_call_status_cleanup(call_sid: str, delay_seconds: int = 60):
         # If not in an event loop (e.g., during shutdown), fall back to immediate cleanup
         cleanup_call_status(call_sid)
 
+def ensure_metrics_file():
+    try:
+        os.makedirs(METRICS_DIR, exist_ok=True)
+        if not os.path.exists(METRICS_FILE):
+            with open(METRICS_FILE, 'a') as _:
+                pass
+    except Exception as e:
+        if DEBUG_LOGS:
+            print(f"⚠️  Could not prepare metrics file: {e}")
+
 # Rate limiting functions are now in rate_limiting.py
 
 # Pydantic models for request bodies
@@ -154,6 +168,7 @@ class OutboundCallRequest(BaseModel):
     to: str
     lang: str = "en"  # Default to English
     year: int = 2024  # Default to current year
+    agentId: Optional[str] = None  # Optional override for testing
     
     @validator('to')
     def validate_phone_number(cls, v):
@@ -317,10 +332,14 @@ async def outbound_call(
             # Development: Use ngrok URL for TwiML webhook
             ngrok_url = os.getenv("SERVER_DOMAIN")
             twiml_url = f"{ngrok_url}/outbound-call-twiml?lang={quote(call_request.lang)}&year={call_request.year}"
+            if call_request.agentId:
+                twiml_url += f"&agentId={quote(call_request.agentId)}"
             print(f"🔧 Development mode - Using ngrok URL: {twiml_url}")
         else:
             # Production: Use the actual request host (Vercel domain)
             twiml_url = f"https://{host}/outbound-call-twiml?lang={quote(call_request.lang)}&year={call_request.year}"
+            if call_request.agentId:
+                twiml_url += f"&agentId={quote(call_request.agentId)}"
             print(f"🚀 Production mode - Using host: {twiml_url}")
         
         print(f"📞 Calling: {call_request.to} ({call_request.lang}, {call_request.year})")
@@ -412,7 +431,8 @@ async def outbound_call(
 async def outbound_call_twiml(
     request: Request,
     lang: str = "en",
-    year: int = 2024
+    year: int = 2024,
+    agentId: Optional[str] = None,
 ):
     response = VoiceResponse()
     connect = Connect()
@@ -444,6 +464,8 @@ async def outbound_call_twiml(
     # Add custom parameters that Twilio will pass in the 'start' event
     stream.parameter(name="lang", value=lang)
     stream.parameter(name="year", value=str(year))
+    if agentId:
+        stream.parameter(name="agentId", value=str(agentId))
     
     print(f"🔗 TwiML WebSocket URL: {websocket_url}")
     print(f"📋 Custom parameters: lang={lang}, year={year}")
@@ -487,6 +509,14 @@ async def handle_outbound_media_stream(websocket: WebSocket):
     eleven_labs_client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
     conversation = None
 
+    # Metrics per-connection
+    ws_connect_ms = int(time.monotonic() * 1000)
+    first_agent_text_ms = None
+    last_agent_text_ms = None
+    first_sentence_ms = None
+    sentences_spoken = 0
+    agent_metadata = {"agent_id": None, "agent_name": None, "voice_id": None, "lang": None, "year": None}
+
     try:
         async for message in websocket.iter_text():
             if not message:
@@ -508,6 +538,7 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                 # Extract language and year from Twilio custom parameters
                 lang = custom_parameters.get("lang", "en")
                 year = int(custom_parameters.get("year", 2024))
+                forced_agent_id = custom_parameters.get("agentId")
 
                 # Set stream_id (used by TwilioAudioInterface for outbound audio)
                 audio_interface.stream_id = stream_sid
@@ -527,6 +558,7 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                         "year": year,
                     })
                     CALL_STATUS[call_sid] = existing
+                    agent_metadata.update({"lang": lang, "year": year})
 
                 # Get era-specific configuration
                 session_vars = get_era_session_variables(year, lang)
@@ -549,6 +581,11 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                     # Get randomized agent (era-agnostic)
                     selected_agent = agent_manager.get_random_agent()
                     agent_id_to_use = agent_manager.get_agent_id(selected_agent) if selected_agent else ELEVENLABS_AGENT_ID_1
+                    if forced_agent_id:
+                        agent_id_to_use = forced_agent_id
+                        # Best-effort to label name when forced
+                        agent_name = next((a['name'] for a in agent_manager.agents if agent_manager.get_agent_id(a) == forced_agent_id), 'forced') if hasattr(agent_manager, 'agents') else 'forced'
+                        selected_agent = { 'name': agent_name }
                     
                     # Fallback to base agent if random selection fails
                     if not agent_id_to_use:
@@ -557,6 +594,11 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                     
                     print(f"🎯 Using agent ID: {agent_id_to_use[:8]}... ({selected_agent['name'] if selected_agent else 'fallback'})")
                     print(f"🎤 Using voice ID: {voice_id[:8] if voice_id else 'default'}... ({selected_voice['name'] if selected_voice else 'agent default'})")
+                    agent_metadata.update({
+                        "agent_id": agent_id_to_use,
+                        "agent_name": (selected_agent['name'] if selected_agent else 'fallback'),
+                        "voice_id": voice_id,
+                    })
                     
                     # Create dynamic variables for the agent's system prompt (exclude voice_settings)
                     dynamic_vars = {k: v for k, v in session_vars.items() if k != 'voice_settings'}
@@ -610,6 +652,46 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                     print(f"📡 Conversation override structure: {json.dumps(conversation_override, indent=2)}")
                     #print(f"⚠️  Important: Voice overrides must be enabled in ElevenLabs agent security settings")
                     
+                    # Define safe callbacks that update metrics without assignment expressions
+                    def on_agent_response(text: str):
+                        nonlocal first_agent_text_ms, first_sentence_ms, last_agent_text_ms, sentences_spoken
+                        now_local = int(time.monotonic() * 1000)
+                        if first_agent_text_ms is None:
+                            first_agent_text_ms = now_local
+                        stripped = text.strip()
+                        if stripped.endswith(('.', '!', '?')) and first_sentence_ms is None:
+                            first_sentence_ms = now_local
+                        if stripped.endswith(('.', '!', '?')):
+                            sentences_spoken = sentences_spoken + 1
+                        last_agent_text_ms = now_local
+                        print(f"Agent ({session_vars['era_name']}/{selected_agent['name'] if selected_agent else 'default'}): {text}")
+
+                    def on_agent_response_no_override(text: str):
+                        nonlocal first_agent_text_ms, first_sentence_ms, last_agent_text_ms, sentences_spoken
+                        now_local = int(time.monotonic() * 1000)
+                        if first_agent_text_ms is None:
+                            first_agent_text_ms = now_local
+                        stripped = text.strip()
+                        if stripped.endswith(('.', '!', '?')) and first_sentence_ms is None:
+                            first_sentence_ms = now_local
+                        if stripped.endswith(('.', '!', '?')):
+                            sentences_spoken = sentences_spoken + 1
+                        last_agent_text_ms = now_local
+                        print(f"Agent (no voice override/{selected_agent['name'] if selected_agent else 'default'}): {text}")
+
+                    def on_agent_response_basic(text: str):
+                        nonlocal first_agent_text_ms, first_sentence_ms, last_agent_text_ms, sentences_spoken
+                        now_local = int(time.monotonic() * 1000)
+                        if first_agent_text_ms is None:
+                            first_agent_text_ms = now_local
+                        stripped = text.strip()
+                        if stripped.endswith(('.', '!', '?')) and first_sentence_ms is None:
+                            first_sentence_ms = now_local
+                        if stripped.endswith(('.', '!', '?')):
+                            sentences_spoken = sentences_spoken + 1
+                        last_agent_text_ms = now_local
+                        print(f"Agent (basic/{selected_agent['name'] if selected_agent else 'default'}): {text}")
+
                     # Try with both dynamic variables and conversation overrides
                     try:
                         config = ConversationInitiationData(
@@ -623,7 +705,7 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                             config=config,
                             requires_auth=True,
                             audio_interface=audio_interface,
-                            callback_agent_response=lambda text: print(f"Agent ({session_vars['era_name']}/{selected_agent['name'] if selected_agent else 'default'}): {text}"),
+                            callback_agent_response=on_agent_response,
                             callback_user_transcript=lambda text: print(f"User: {text}"),
                         )
                         print("✅ Created conversation with dynamic variables and voice overrides")
@@ -644,7 +726,7 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                                 config=config_fallback,
                                 requires_auth=True,
                                 audio_interface=audio_interface,
-                                callback_agent_response=lambda text: print(f"Agent (no voice override/{selected_agent['name'] if selected_agent else 'default'}): {text}"),
+                                callback_agent_response=on_agent_response_no_override,
                                 callback_user_transcript=lambda text: print(f"User: {text}"),
                             )
                             print("✅ Created conversation with dynamic variables only (no voice overrides)")
@@ -658,7 +740,7 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                                 agent_id=agent_id_to_use,
                                 requires_auth=True,
                                 audio_interface=audio_interface,
-                                callback_agent_response=lambda text: print(f"Agent (basic/{selected_agent['name'] if selected_agent else 'default'}): {text}"),
+                                callback_agent_response=on_agent_response_basic,
                                 callback_user_transcript=lambda text: print(f"User: {text}"),
                             )
 
@@ -705,6 +787,28 @@ async def handle_outbound_media_stream(websocket: WebSocket):
                     CALL_STATUS[call_sid] = existing
                     # Delay cleanup to allow frontend pollers to read final state
                     schedule_call_status_cleanup(call_sid)
+                # Persist metrics
+                try:
+                    ensure_metrics_file()
+                    audio_metrics = audio_interface.export_metrics()
+                    record = {
+                        "ts": int(time.monotonic() * 1000),
+                        "call_sid": call_sid,
+                        "stream_sid": stream_sid,
+                        "agent": agent_metadata,
+                        "setup_ms": (first_agent_text_ms - ws_connect_ms) if first_agent_text_ms else None,
+                        "first_audio_ms": (audio_metrics.get("first_out_ms") - ws_connect_ms) if audio_metrics.get("first_out_ms") else None,
+                        "first_sentence_delta_ms": (first_sentence_ms - ws_connect_ms) if first_sentence_ms else None,
+                        "last_agent_text_delta_ms": (last_agent_text_ms - ws_connect_ms) if last_agent_text_ms else None,
+                        "sentences_spoken": sentences_spoken,
+                        "audio": audio_metrics,
+                    }
+                    with open(METRICS_FILE, 'a') as f:
+                        f.write(json.dumps(record) + "\n")
+                    if DEBUG_LOGS:
+                        print(f"📝 Wrote metrics to {METRICS_FILE}")
+                except Exception as e:
+                    print(f"⚠️  Failed to write metrics: {e}")
                 if conversation:
                     try:
                         conversation.end_session()

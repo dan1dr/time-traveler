@@ -39,24 +39,31 @@ pnpm build
 pnpm start
 ```
 
-## Deploying to Vercel
+## Deployment
 
-- Recommended: Connect the repo to Vercel and set the project root to `apps/web`.
-- Environment Variables:
-  - `NEXT_PUBLIC_BACKEND_URL` — your public backend URL (https).
-- Build & Output:
-  - Framework: Next.js
-  - Build Command: `pnpm build`
-  - Install Command: `pnpm i`
-  - Output: automatically handled by Next
-- If using monorepo:
-  - Set Project Settings → Root Directory: `apps/web`
-  - Optionally enable Turborepo (not required here)
+For complete deployment instructions including both frontend (Vercel) and backend (Railway/Render), see the comprehensive deployment guide:
+
+📖 **[Complete Deployment Guide](../infra/deployment/README.md)**
+
+### Quick Vercel Deployment
+
+- **Project Root**: `apps/web`
+- **Framework**: Next.js (auto-detected)
+- **Build Command**: `pnpm build`
+- **Install Command**: `pnpm i`
+- **Environment Variables**:
+  - `NEXT_PUBLIC_BACKEND_URL` — your public backend URL (https)
+
+### Prerequisites
+
+- Backend deployed and accessible (see deployment guide)
+- Vercel and Railway account
+- Environment variables configured
 
 ## UI Overview
 
 - Country + phone input with validation
-- Year slider (0–5000+) showing era label and description
+- Year slider showing era label and description
 - Language toggle EN/ES
 - Call button with loading state and inline feedback
 

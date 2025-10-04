@@ -26,7 +26,7 @@ export function LanguageToggle({
       <button
         type="button"
         onClick={() => handleClick("en")}
-        className={`px-4 py-3 text-base transition-all duration-200 relative overflow-hidden btn-reflect btn-liquid ${
+        className={`px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base transition-all duration-200 relative overflow-hidden btn-reflect btn-liquid ${
           value === "en"
             ? "text-white"
             : "text-slate-200 hover:bg-white/10"
@@ -44,7 +44,7 @@ export function LanguageToggle({
       <button
         type="button"
         onClick={() => handleClick("es")}
-        className={`px-4 py-3 text-base transition-all duration-200 relative overflow-hidden btn-reflect btn-liquid ${
+        className={`px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base transition-all duration-200 relative overflow-hidden btn-reflect btn-liquid ${
           value === "es"
             ? "text-white"
             : "text-slate-200 hover:bg-white/10"

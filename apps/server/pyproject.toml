@@ -17,6 +17,7 @@ uvicorn = "^0.35.0"
 twilio = "^9.8.0"
 python-multipart = "^0.0.20"
 starlette = "^0.48.0"
+PyJWT = "^2.8.0"
 shared-py = {path = "./shared_py", develop = true}
 
 

@@ -24,17 +24,17 @@ export function YearSlider({
     <div className="relative">
       {/* Centered Year Display with Zoom Animation */}
       <div className="text-center mb-6 year-header" style={{minHeight:'8.5rem'}}>
-        <div className={`text-2xl font-semibold transition-transform duration-300 fk-grotesk-light will-change-transform`}
+        <div className={`text-lg sm:text-xl md:text-2xl font-semibold transition-transform duration-300 fk-grotesk-light px-2`}
           style={{
-            transform: isSliding ? 'scale(1.06)' : 'scale(1)',
+            transform: isSliding ? 'scale(1.02)' : 'scale(1)',
             color: randomSelected ? 'rgba(200,200,200,0.9)' : (value >= 2026 ? 'rgba(72,209,204,0.9)' : 'rgba(255,255,255,0.9)')
           }}>
           {randomSelected ? (lang === 'es' ? 'Desconocido' : 'Unknown') : (value >= 2026 ? (lang === 'es' ? 'Futuro' : 'Future') : era.label)}
         </div>
         
         {/* Year with zoom effect */}
-        <div className={`text-4xl font-bold transition-transform duration-200 fk-grotesk-light`}
-          style={{transform: isSliding ? 'scale(1.12)' : 'scale(1)'}}>
+        <div className={`text-3xl sm:text-4xl font-bold transition-transform duration-200 fk-grotesk-light`}
+          style={{transform: isSliding ? 'scale(1.05)' : 'scale(1)'}}>
           {randomSelected ? '?' : value}
         </div>
       </div>
@@ -90,7 +90,7 @@ export function YearSlider({
       </div>
 
       {/* Era Description */}
-      <div className="mt-10 text-center text-sm max-w-xs mx-auto fk-grotesk-light" style={{
+      <div className="mt-10 text-center text-xs sm:text-sm max-w-xs mx-auto fk-grotesk-light px-4" style={{
         minHeight: '2.6rem',
         display: '-webkit-box',
         WebkitLineClamp: 2 as any,
