@@ -509,34 +509,34 @@ export default function Home() {
       {/* Fixed extended backdrop to avoid hard cut when scrolling */}
       <div className="hero-backdrop" aria-hidden="true" />
       {/* Global language icon toggle */}
-      <div className="fixed top-4 right-4 z-40">
+      <div className="fixed top-3 right-3 sm:top-4 sm:right-4 z-40">
         <button
           type="button"
           onClick={() => setUiLang(uiLang === 'en' ? 'es' : 'en')}
-          className="btn-primary btn-reflect h-9 px-4 text-sm"
+          className="btn-primary btn-reflect h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm"
           aria-label="Toggle language"
           title={uiLang === 'en' ? 'Español' : 'English'}
         >
           {uiLang === 'en' ? 'EN' : 'ES'}
         </button>
       </div>
-      <main className={`hero-bg min-h-screen flex items-center justify-center text-center px-6 relative overflow-visible ${preOverlay ? 'pre-overlay-blur' : ''}`}>
-        <div className="max-w-5xl transition-all duration-700 ease-out">
+      <main className={`hero-bg min-h-screen flex items-center justify-center text-center px-4 sm:px-6 py-8 relative overflow-visible ${preOverlay ? 'pre-overlay-blur' : ''}`}>
+        <div className="max-w-5xl w-full transition-all duration-700 ease-out">
           {/* Hero content */}
           <div 
             className={`transition-all duration-700 ease-out ${
               showForm ? 'opacity-0 transform -translate-y-8 pointer-events-none' : 'opacity-100 transform translate-y-0'
             }`}
           >
-            <h1 className="text-6xl md:text-7xl lg:text-8xl font-extrabold leading-[1.08] fk-grotesk-light whitespace-nowrap">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-extrabold leading-[1.08] fk-grotesk-light">
               {t.heroTitle}
             </h1>
-            <p className="mt-5 text-slate-100 text-lg md:text-xl fk-grotesk-light">
+            <p className="mt-5 text-slate-100 text-base sm:text-lg md:text-xl fk-grotesk-light max-w-2xl mx-auto">
               {t.heroSubtitle}
             </p>
             <div className="mt-8 flex items-center justify-center gap-3">
               <button
-                className={`btn-primary btn-liquid btn-reflect h-12 px-8 ${fillGuide ? 'is-filling' : ''}`}
+                className={`btn-primary btn-liquid btn-reflect h-12 px-6 sm:px-8 text-sm sm:text-base ${fillGuide ? 'is-filling' : ''}`}
                 onClick={handleGuideMe}
               >
                 {t.guideMe}
@@ -555,9 +555,9 @@ export default function Home() {
               {/* Step 1: Language Selection */}
               {currentStep === 1 && (
                 <div className="step-enter step-enter-active w-full">
-                  <div className="text-center mb-6">
-                    <h2 className="text-3xl md:text-4xl font-semibold mb-3 fk-grotesk-light">{t.chooseLanguage}</h2>
-                    <p className="text-slate-300 text-base fk-grotesk-light">{t.chooseLanguageSub}</p>
+                  <div className="text-center mb-6 px-4">
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-3 fk-grotesk-light">{t.chooseLanguage}</h2>
+                    <p className="text-slate-300 text-sm sm:text-base fk-grotesk-light">{t.chooseLanguageSub}</p>
                   </div>
                   <div className="flex justify-center">
                     <LanguageToggle value={voiceLang} onChange={handleLanguageSelect} />
@@ -568,9 +568,9 @@ export default function Home() {
               {/* Step 2: Phone Input */}
               {currentStep === 2 && (
                 <div className="step-enter step-enter-active w-full">
-                  <div className="text-center mb-6">
-                    <h2 className="text-3xl md:text-4xl font-semibold mb-3 fk-grotesk-light max-w-md mx-auto">{t.phoneTitle}</h2>
-                    <p className="text-slate-300 text-base fk-grotesk-light max-w-sm mx-auto">{t.phoneSub}</p>
+                  <div className="text-center mb-6 px-4">
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-3 fk-grotesk-light max-w-md mx-auto">{t.phoneTitle}</h2>
+                    <p className="text-slate-300 text-sm sm:text-base fk-grotesk-light max-w-sm mx-auto">{t.phoneSub}</p>
                   </div>
                   <div className="space-y-4">
                     <div className="max-w-xl mx-auto">
@@ -591,7 +591,7 @@ export default function Home() {
                             }, 450);
                           }}
                           disabled={!isValid}
-                          className={`btn-primary btn-liquid btn-reflect h-10 px-6 disabled:opacity-50 disabled:cursor-not-allowed ${fillProceed ? 'is-filling' : ''}`}
+                          className={`btn-primary btn-liquid btn-reflect h-10 px-4 sm:px-6 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed ${fillProceed ? 'is-filling' : ''}`}
                         >
                           {t.proceed}
                         </button>
@@ -604,9 +604,9 @@ export default function Home() {
               {/* Step 3: Year Selection */}
               {currentStep === 3 && !loading && (
                 <div className={`step-enter step-enter-active w-full`}>
-                  <div className="text-center mb-6">
-                    <h2 className="text-3xl md:text-4xl font-semibold mb-3 fk-grotesk-light">{t.step3Title}</h2>
-                    <p className="text-slate-300 text-base fk-grotesk-light">{t.step3Sub}</p>
+                  <div className="text-center mb-6 px-4">
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-3 fk-grotesk-light">{t.step3Title}</h2>
+                    <p className="text-slate-300 text-sm sm:text-base fk-grotesk-light">{t.step3Sub}</p>
                   </div>
                   <div className="relative">
                     <div className="absolute -top-4 right-8 w-2 h-2 rounded-full sparkle" />
@@ -618,17 +618,17 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={randomizeYear}
-                      className={`h-8 px-4 rounded-xl border text-slate-100 transition fk-grotesk-light ${randYear ? 'border-white/40 bg-white/30' : 'border-white/30 hover:bg-white/15'}`}
+                      className={`h-8 px-3 sm:px-4 text-xs sm:text-sm rounded-xl border text-slate-100 transition fk-grotesk-light ${randYear ? 'border-white/40 bg-white/30' : 'border-white/30 hover:bg-white/15'}`}
                     >
                       {t.randomYear}
                     </button>
                   </div>
-                  <div className="text-center mt-9">
+                  <div className="text-center mt-9 px-4">
                     {hasInteracted && (
                       <button
                       onClick={initiateCall}
                       disabled={!isValid || loading}
-                    className={`btn-primary btn-liquid btn-reflect btn-impact h-12 px-8 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    className={`btn-primary btn-liquid btn-reflect btn-impact h-12 px-6 sm:px-8 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed ${
                       loading ? 'travel-machine-activating' : ''
                     } ${fillSummon ? 'is-filling' : ''} ${impact ? 'is-impacting' : ''}`}
                     >
@@ -685,9 +685,9 @@ export default function Home() {
                 <div key={i} className={`asteroid asteroid-${i + 1}`} />
               ))}
               
-              <div className="connecting-card-enhanced fk-grotesk-light relative z-10">
-                <div className="era-year">{uiLang === 'es' ? `Alguien del año ${wasRandomYearClicked ? '?' : (callingYear ?? year)} te está llamando…` : `Someone from the year ${wasRandomYearClicked ? '?' : (callingYear ?? year)} is calling you…`}</div>
-                <div className="subtitle">{t.overlaySubtitle}</div>
+              <div className="connecting-card-enhanced fk-grotesk-light relative z-10 mx-4">
+                <div className="era-year text-lg sm:text-xl md:text-2xl">{uiLang === 'es' ? `Alguien del año ${wasRandomYearClicked ? '?' : (callingYear ?? year)} te está llamando…` : `Someone from the year ${wasRandomYearClicked ? '?' : (callingYear ?? year)} is calling you…`}</div>
+                <div className="subtitle text-sm sm:text-base">{t.overlaySubtitle}</div>
                 
                 <div className="liquid-phone-orb">
                   <div className="phone-icon">📱</div>
@@ -718,11 +718,11 @@ export default function Home() {
             <div key={i} className={`asteroid asteroid-${i + 1}`} />
           ))}
           
-          <div className="final-message-modal fk-grotesk-light max-w-md relative z-10">
+          <div className="final-message-modal fk-grotesk-light max-w-md relative z-10 mx-4">
             <div className="text-center">
-              <div className="text-4xl mb-4">📞</div>
-              <h3 className="text-2xl font-semibold mb-2 text-white">{finalMessage}</h3>
-              <div className="text-slate-300 text-sm">{t.returningToMachine}</div>
+              <div className="text-3xl sm:text-4xl mb-4">📞</div>
+              <h3 className="text-xl sm:text-2xl font-semibold mb-2 text-white">{finalMessage}</h3>
+              <div className="text-slate-300 text-xs sm:text-sm">{t.returningToMachine}</div>
             </div>
           </div>
         </div>
@@ -733,24 +733,24 @@ export default function Home() {
         href="https://github.com/dan1dr/time-traveler"
         target="_blank"
         rel="noreferrer"
-        className="fixed bottom-5 right-5 p-2 hover:opacity-70 transition-opacity z-50"
+        className="fixed bottom-3 right-3 sm:bottom-5 sm:right-5 p-2 hover:opacity-70 transition-opacity z-50"
         aria-label="Open repository"
       >
         {/* GitHub icon - pure icon, no background */}
-        <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor" className="text-white">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" className="text-white sm:w-8 sm:h-8">
           <path d="M12 .5a12 12 0 00-3.79 23.4c.6.11.82-.26.82-.58 0-.29-.01-1.05-.02-2.06-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.35-1.76-1.35-1.76-1.11-.76.08-.74.08-.74 1.22.09 1.86 1.26 1.86 1.26 1.09 1.86 2.86 1.33 3.56 1.02.11-.79.43-1.33.78-1.64-2.66-.3-5.46-1.33-5.46-5.91 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.17 0 0 1.01-.32 3.31 1.23a11.5 11.5 0 016.02 0c2.3-1.55 3.31-1.23 3.31-1.23.66 1.65.24 2.87.12 3.17.77.84 1.24 1.91 1.24 3.22 0 4.59-2.8 5.61-5.47 5.91.44.38.83 1.12.83 2.27 0 1.64-.02 2.96-.02 3.36 0 .32.22.69.83.58A12 12 0 0012 .5z"/>
         </svg>
       </a>
-      <section className="hero-continue min-h-[24vh] flex items-end justify-center pb-10 relative">
-        <div className="text-center text-sm md:text-base text-slate-200 fk-grotesk-light flex items-center justify-center gap-2">
+      <section className="hero-continue min-h-[24vh] flex items-end justify-center pb-6 sm:pb-10 relative">
+        <div className="text-center text-xs sm:text-sm md:text-base text-slate-200 fk-grotesk-light flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-4">
           <button 
             onClick={() => setShowAbout(true)}
             className="font-semibold underline-offset-4 hover:underline cursor-pointer"
           >
             {t.about}
           </button>
-          <span className="text-slate-300 font-bold">•</span>
-          <span>Powered by <a href="https://elevenlabs.io/" target="_blank" rel="noreferrer" className="font-semibold underline-offset-4 hover:underline">ElevenLabs</a></span>
+          <span className="text-slate-300 font-bold hidden sm:inline">•</span>
+          <span className="text-center">Powered by <a href="https://elevenlabs.io/" target="_blank" rel="noreferrer" className="font-semibold underline-offset-4 hover:underline">ElevenLabs</a></span>
         </div>
       </section>
 
@@ -762,18 +762,18 @@ export default function Home() {
             <div key={i} className={`asteroid asteroid-${i + 1}`} />
           ))}
           
-          <div className="about-modal fk-grotesk-light max-w-lg relative z-10">
+          <div className="about-modal fk-grotesk-light max-w-lg relative z-10 mx-4">
             <div className="text-center mb-4">
-              <h3 className="text-2xl font-semibold mb-2 text-white">{t.aboutTitle}</h3>
+              <h3 className="text-xl sm:text-2xl font-semibold mb-2 text-white">{t.aboutTitle}</h3>
             </div>
             <div 
-              className="text-slate-200 leading-relaxed mb-6 whitespace-pre-line" 
+              className="text-slate-200 text-sm sm:text-base leading-relaxed mb-6 whitespace-pre-line max-h-[60vh] overflow-y-auto" 
               dangerouslySetInnerHTML={{ __html: t.aboutContent }}
             />
             <div className="text-center">
               <button 
                 onClick={() => setShowAbout(false)}
-                className="btn-primary btn-reflect h-10 px-6"
+                className="btn-primary btn-reflect h-10 px-4 sm:px-6 text-sm sm:text-base"
               >
                 ✨ {t.closePortal}
               </button>

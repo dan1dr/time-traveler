@@ -196,16 +196,16 @@ export function CountryPhoneInput({
   }
 
   return (
-    <div className={`flex gap-2 overflow-visible`}>
+    <div className={`flex flex-col sm:flex-row gap-2 overflow-visible`}>
       <div className="relative">
         <button
           type="button"
-          className="input pr-10 flex items-center gap-2 min-w-[140px]"
+          className="input pr-10 flex items-center gap-2 min-w-full sm:min-w-[140px] text-sm"
           onClick={() => toggleOpen(!open)}
         >
-          <span className="text-xl">{selected.flag}</span>
-          <span className="text-sm text-slate-300">{selected.name}</span>
-          <span className="ml-auto text-white">{selected.dial}</span>
+          <span className="text-lg sm:text-xl">{selected.flag}</span>
+          <span className="text-xs sm:text-sm text-slate-300 truncate">{selected.name}</span>
+          <span className="ml-auto text-white text-sm">{selected.dial}</span>
         </button>
         {open && (
           <div className="absolute z-50 mt-1 w-[min(26rem,90vw)] max-h-72 overflow-auto crystal-panel crystal-scroll rounded-xl p-1 shadow-2xl">
@@ -233,7 +233,7 @@ export function CountryPhoneInput({
         <input
           type="tel"
           inputMode="tel"
-          className={`input w-full ${error ? 'border-red-400 focus:border-red-400' : ''}`}
+          className={`input w-full text-sm sm:text-base ${error ? 'border-red-400 focus:border-red-400' : ''}`}
           placeholder="Phone number"
           value={value.number}
           onChange={(e) => {
