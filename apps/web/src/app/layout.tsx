@@ -4,6 +4,10 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Time Traveler — Call the Past and Future',
   description: 'Initiate a live call with an era-flavored ElevenLabs agent via Twilio.',
+  icons: {
+    icon: '/images/icon.png',
+    apple: '/images/icon.png',
+  },
 }
 
 export default function RootLayout({
