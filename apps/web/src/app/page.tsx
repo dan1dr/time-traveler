@@ -506,8 +506,6 @@ export default function Home() {
 
   return (
     <>
-      {/* Fixed extended backdrop to avoid hard cut when scrolling */}
-      <div className="hero-backdrop" aria-hidden="true" />
       {/* Global language icon toggle */}
       <div className="fixed top-3 right-3 sm:top-4 sm:right-4 z-40">
         <button
@@ -767,7 +765,7 @@ export default function Home() {
               <h3 className="text-xl sm:text-2xl font-semibold mb-2 text-white">{t.aboutTitle}</h3>
             </div>
             <div 
-              className="text-slate-200 text-sm sm:text-base leading-relaxed mb-6 whitespace-pre-line max-h-[60vh] overflow-y-auto" 
+              className="text-slate-200 text-sm sm:text-base leading-relaxed mb-6 whitespace-pre-line max-h-[60vh] overflow-y-auto crystal-scroll" 
               dangerouslySetInnerHTML={{ __html: t.aboutContent }}
             />
             <div className="text-center">
