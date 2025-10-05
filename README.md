@@ -12,25 +12,6 @@ An AI-powered time traveler that calls you from any historical era! Using Eleven
 - **Real-Time Audio**: Seamless Twilio ↔ ElevenLabs integration with optimized audio conversion
 - **Smart Randomization**: Voice and agent selection with character consistency
 - **Production Ready**: Complete deployment infrastructure with comprehensive documentation
-- **Bulletproof Testing**: 100% test coverage of critical paths with robust error handling
-
-### Technical Excellence
-- **WebSocket Mastery**: Real-time audio streaming with Twilio Media Streams
-- **Era Intelligence**: Dynamic variable injection for authentic historical context
-- **Voice Adaptation**: Era-specific voice characteristics (speed, stability, style)
-- **Error Resilience**: Comprehensive fallback systems and graceful degradation
-- **Developer Experience**: Complete setup guides, testing infrastructure, and deployment automation
-
-### Architecture Highlights
-- **Modular Design**: Clean separation between server logic, shared modules, and tests
-- **JWT Authentication**: Secure token-based authentication with configurable expiration
-- **Rate Limiting**: Built-in sliding window rate limiting (5 calls/5min per token)
-- **Type Safety**: Python dataclasses for era configuration with validation  
-- **Randomization**: Language-based voice selection + personality-based agent selection
-- **Character Consistency**: Voice metadata ensures character-voice alignment
-- **Immersive Experience**: Era-specific first messages and voice settings
-- **Testing**: 49 unit tests covering all core logic with comprehensive coverage
-- **Poetry Management**: Root-level dependency management for easy testing and CI/CD
 
 ## Features
 
@@ -45,56 +26,20 @@ An AI-powered time traveler that calls you from any historical era! Using Eleven
 
 The system delivers an **outbound voice experience**: a visitor submits a form (phone, language, year) and immediately receives a call. On pickup, a **live ElevenLabs Agent** converses naturally with era-flavored style.
 
-### Complete Call Flow
+ 
 
-```mermaid
-sequenceDiagram
-  autonumber
-  participant UI as Your UI (form/button)
-  participant API as FastAPI Server
-  participant Twilio as Twilio Voice (PSTN)
-  participant WS as /outbound-media-stream (WebSocket)
-  participant EL as ElevenLabs Conversation
-
-  UI->>API: POST /outbound-call (to=+34...)
-  API->>Twilio: REST calls.create(from, to, url=/outbound-call-twiml)
-  Note right of Twilio: Places the phone call to the user
-
-  Twilio->>API: GET/POST /outbound-call-twiml
-  API-->>Twilio: TwiML Connect Stream url
-
-  Twilio->>WS: WebSocket CONNECT
-  WS-->>Twilio: 101 Switching Protocols
-
-  Twilio->>WS: event start with streamSid and callSid
-  WS->>EL: conversation.start_session(audio_interface)
-
-  loop Realtime audio (caller to agent)
-    Twilio->>WS: event media with base64 payload
-    WS->>WS: decode and resample audio
-    WS->>EL: input_callback(PCM16 16k)
-    EL-->>WS: agent computes reply
-  end
-
-  loop Realtime audio (agent to caller)
-    EL-->>WS: output(PCM16 16k)
-    WS->>WS: base64 encode
-    WS-->>Twilio: event media with payload
-    Note right of Twilio: Plays audio to the caller
-  end
-
-  Twilio->>WS: event stop
-  WS->>EL: end_session and cleanup
-  WS-->>Twilio: socket closes
-```
+ 
 
 ## 🚀 Quick Start
 
-For complete, detailed instructions, see:
-- Backend: [apps/server/README.md](apps/server/README.md)
-- Frontend (web): [apps/web/README.md](apps/web/README.md)
+### Prerequisites
+1. **ElevenLabs Agent Setup**: Create and configure your conversational agents → [apps/server/README.md](apps/server/README.md)
+2. **Twilio Integration**: Set up Twilio phone number and webhooks → [infra/twilio/README.md](infra/twilio/README.md)
+3. **Environment Variables**: Configure `.env` files (see Configuration section below)
 
-### 1. Start the Server
+### Local Development
+
+#### 1. Start the Backend
 ```bash
 cd apps/server
 # Install dependencies with Poetry (creates/uses a virtualenv)
@@ -104,29 +49,44 @@ poetry install
 poetry run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-### 2. Start ngrok (separate terminal)
+#### 2. Start ngrok (separate terminal)
 ```bash
 ngrok http 8000
 ```
 
-### 3. Get JWT Token
+#### 3. Start the Frontend (localhost)
 ```bash
-# Get authentication token
-curl -X POST https://YOUR_NGROK_URL/auth/login
+cd apps/web
+pnpm install  # or: npm install / yarn
+
+# Create .env.local with your ngrok URL
+echo "NEXT_PUBLIC_BACKEND_URL=https://YOUR_NGROK_URL" > .env.local
+
+# Run dev server
+pnpm dev  # or: npm run dev / yarn dev
+# Open http://localhost:3000
 ```
 
-### 4. Make a Call
+#### 4. Test with cURL (optional)
 ```bash
-# Use the token from step 3
+# Get authentication token
+TOKEN=$(curl -s -X POST https://YOUR_NGROK_URL/auth/login | jq -r '.token')
+
+# Make a test call
 curl -X POST https://YOUR_NGROK_URL/outbound-call \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE" \
+  -H "Authorization: Bearer $TOKEN" \
   -d '{
     "to": "+1234567890",
     "lang": "en",
     "year": 1350
   }'
 ```
+
+### Production Deployment
+- **Frontend (Vercel)**: See [infra/deployment/README.md](infra/deployment/README.md) for complete Vercel deployment guide
+- **Backend (Railway)**: Detailed in the same deployment guide
+- **Complete Instructions**: [apps/server/README.md](apps/server/README.md) and [apps/web/README.md](apps/web/README.md)
 
  
 ## 🔧 Configuration
@@ -178,41 +138,8 @@ See `apps/server/AGENT_SETUP.md` for complete configuration guide.
 
 The API uses JWT (JSON Web Tokens) for secure authentication. All endpoints require a valid token.
 
-### Generate JWT Secret
-```bash
-# Generate a secure secret for your .env file
-python3 -c "import secrets; print(secrets.token_urlsafe(32))"
-```
-
-### Authentication Flow
-1. **Get Token**: `POST /auth/login` - Returns JWT token
-2. **Use Token**: Include `Authorization: Bearer TOKEN` in API calls
-3. **Refresh Token**: `POST /auth/refresh` - Get new token before expiration
-4. **Verify Token**: `GET /auth/verify` - Check if token is valid
-
-### Example Usage
-```bash
-# 1. Get token
-TOKEN=$(curl -s -X POST https://your-api.com/auth/login | jq -r '.token')
-
-# 2. Check rate limit status (optional)
-curl -X GET https://your-api.com/rate-limit/status \
-  -H "Authorization: Bearer $TOKEN"
-
-# 3. Make authenticated call
-curl -X POST https://your-api.com/outbound-call \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"to":"+1234567890","lang":"en","year":1350}'
-```
-
-### Rate Limiting
-The API includes built-in rate limiting to prevent abuse:
-- **Default**: 5 calls per 5-minute window per token
-- **Configurable**: Set `RATE_LIMIT_CALLS` and `RATE_LIMIT_WINDOW_MINUTES` in environment
-- **Sliding Window**: Uses a sliding window approach for fair rate limiting
-- **Status Endpoint**: Check current rate limit status with `GET /rate-limit/status`
-- **Error Response**: Returns HTTP 429 with detailed rate limit information when exceeded
+For detailed examples (including cURL snippets), see the backend guide:
+- [apps/server/README.md](apps/server/README.md)
 
 ## API Endpoints
 
@@ -321,6 +248,48 @@ poetry run pytest tests/test_rate_limiting.py -q
 
 **AI Renaissance (2035, English):**
 > "The neural networks whisper such wisdom... My AI companion suggests we consider how your primitive devices evolved into our symbiotic consciousness."
+
+### Complete Call Flow
+```mermaid
+sequenceDiagram
+  autonumber
+  participant UI as Your UI (form/button)
+  participant API as FastAPI Server
+  participant Twilio as Twilio Voice (PSTN)
+  participant WS as /outbound-media-stream (WebSocket)
+  participant EL as ElevenLabs Conversation
+
+  UI->>API: POST /outbound-call (to=+34...)
+  API->>Twilio: REST calls.create(from, to, url=/outbound-call-twiml)
+  Note right of Twilio: Places the phone call to the user
+
+  Twilio->>API: GET/POST /outbound-call-twiml
+  API-->>Twilio: TwiML Connect Stream url
+
+  Twilio->>WS: WebSocket CONNECT
+  WS-->>Twilio: 101 Switching Protocols
+
+  Twilio->>WS: event start with streamSid and callSid
+  WS->>EL: conversation.start_session(audio_interface)
+
+  loop Realtime audio (caller to agent)
+    Twilio->>WS: event media with base64 payload
+    WS->>WS: decode and resample audio
+    WS->>EL: input_callback(PCM16 16k)
+    EL-->>WS: agent computes reply
+  end
+
+  loop Realtime audio (agent to caller)
+    EL-->>WS: output(PCM16 16k)
+    WS->>WS: base64 encode
+    WS-->>Twilio: event media with payload
+    Note right of Twilio: Plays audio to the caller
+  end
+
+  Twilio->>WS: event stop
+  WS->>EL: end_session and cleanup
+  WS-->>Twilio: socket closes
+```
 
 ## 📊 Performance & Latency Testing
 
