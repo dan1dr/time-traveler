@@ -1098,5 +1098,16 @@ body {
   .year-header div {
     transform-origin: center center;
   }
+
+  /* Keep background static while interacting with horizontal slider */
+  html, body {
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
+  }
+
+  /* Prevent page from horizontally panning when dragging the slider */
+  .crystal-slider {
+    touch-action: none;
+  }
 }
 

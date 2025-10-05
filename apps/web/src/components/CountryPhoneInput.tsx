@@ -229,7 +229,7 @@ export function CountryPhoneInput({
           </div>
         )}
       </div>
-      <div className="w-full">
+      <div className={`w-full ${open ? 'invisible pointer-events-none sm:visible sm:pointer-events-auto' : ''}`}>
         <input
           type="tel"
           inputMode="tel"

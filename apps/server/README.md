@@ -297,6 +297,34 @@ The system automatically passes these variables to your ElevenLabs agent, allowi
 ```
 **Result**: Agent speaks like someone from the AI Renaissance with expressions about neural networks and human-AI collaboration.
 
+## Authentication and Example cURL
+
+All API endpoints require a JWT. Obtain and use a token with these examples:
+
+### Generate JWT Secret (for local .env)
+```bash
+python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+### Get Token
+```bash
+TOKEN=$(curl -s -X POST https://your-api.com/auth/login | jq -r '.token')
+```
+
+### Check Rate Limit Status (optional)
+```bash
+curl -X GET https://your-api.com/rate-limit/status \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### Make an Authenticated Call
+```bash
+curl -X POST https://your-api.com/outbound-call \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"to":"+1234567890","lang":"en","year":1350}'
+```
+
 ## 🧪 Testing
 
 ### Unit Tests
