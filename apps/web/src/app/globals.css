@@ -11,6 +11,11 @@ html, body, #__next {
   height: 100%;
 }
 
+/* Disable vertical overscroll bounce and overscroll chaining globally */
+html, body {
+  overscroll-behavior-y: none;
+}
+
 body {
   background: radial-gradient(1200px 600px at 80% -10%, rgba(108,99,255,0.15), transparent),
               radial-gradient(800px 400px at 20% 110%, rgba(72,209,204,0.15), transparent),
@@ -121,6 +126,9 @@ body {
   background: linear-gradient(180deg, rgba(255,255,255,0.25), rgba(255,255,255,0.1));
   border-radius: 9999px;
   border: 2px solid rgba(255,255,255,0.1);
+}
+.crystal-scroll {
+  overscroll-behavior: contain;
 }
 .crystal-panel {
   background: linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.03));

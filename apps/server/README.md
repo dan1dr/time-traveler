@@ -2,7 +2,7 @@
 
 This guide explains how to configure and customize ElevenLabs agents for the Time Traveler voice application, including era-specific personality and voice settings.
 
-## 🏗️ Current Server Structure
+## Current Server Structure
 
 ```
 apps/server/
@@ -325,7 +325,7 @@ curl -X POST https://your-api.com/outbound-call \
   -d '{"to":"+1234567890","lang":"en","year":1350}'
 ```
 
-## 🧪 Testing
+## Testing
 
 ### Unit Tests
 Run the comprehensive test suite:
@@ -343,11 +343,11 @@ poetry run pytest tests/test_voice_manager.py -v
 ### Integration Testing
 Make test calls with different years and check logs for:
 ```
-🤖 Selected random agent: Time Traveler - Scholar
-🎯 Using agent ID: abc12345... (Time Traveler - Scholar)
-🎤 Selected voice: Spanish Voice 1 (ID: def67890...) - female young adult
-📅 Era: High Middle Ages (1350) - feudal order, chivalry, scholasticism
-🗣️ Expressions: "By my troth!", "The cathedral spires reach toward heaven..."
+Selected random agent: Time Traveler - Scholar
+Using agent ID: abc12345... (Time Traveler - Scholar)
+Selected voice: Spanish Voice 1 (ID: def67890...) - female young adult
+Era: High Middle Ages (1350) - feudal order, chivalry, scholasticism
+Expressions: "By my troth!", "The cathedral spires reach toward heaven..."
 ```
 
 ### Test Coverage
@@ -360,12 +360,12 @@ The project includes 49 unit tests covering:
 
 ## Quick Setup Checklist
 
-- [ ] Create agents in ElevenLabs dashboard
-- [ ] Add agent IDs to `.env` file
-- [ ] Update `agents.json` with agent names
-- [ ] Update `voices.json` with voice pools
-- [ ] Configure system prompts in ElevenLabs dashboard
-- [ ] Test with multiple calls to verify randomization
-- [ ] Test different years to verify era configuration
-- [ ] Test both English and Spanish to verify language support
+- Create agents in ElevenLabs dashboard
+- Add agent IDs to `.env` file
+- Update `agents.json` with agent names
+- Update `voices.json` with voice pools
+- Configure system prompts in ElevenLabs dashboard
+- Test with multiple calls to verify randomization
+- Test different years to verify era configuration
+- Test both English and Spanish to verify language support
 ```

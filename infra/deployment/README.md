@@ -2,7 +2,7 @@
 
 A comprehensive guide to deploy the Time Traveler project using Vercel for frontend and Railway for the Python backend.
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 ```
 ┌─────────────────┐    HTTP/WebSocket    ┌──────────────────┐
@@ -277,7 +277,7 @@ DEBUG_LOGS=true
 NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
 ```
 
-## 💰 Cost Estimation
+## Cost Estimation
 
 ### Vercel (Frontend)
 - **Free Tier**: 100GB bandwidth, unlimited personal projects
@@ -292,7 +292,7 @@ NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
 - **Development**: Free (local backend + Vercel free)
 - **Production**: $5-10/month (Railway + Vercel free)
 
-## 🚨 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -328,7 +328,7 @@ curl https://your-app.railway.app/
 2. **Railway**: Global environment variables for the service
 3. **Rebuild**: Changes require redeployment on both platforms
 
-## 🔒 Security Considerations
+## Security Considerations
 
 ### Environment Variables
 - Never commit `.env` files

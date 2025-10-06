@@ -1,6 +1,8 @@
 # 🧞‍♂️ Time Traveler Agent
 
-An AI-powered time traveler that calls you from any historical era! Using ElevenLabs Conversational AI and Twilio, this agent embodies characters from Ancient Times to the Far Future (3000+ AD) with era-specific personalities, expressions, and voice characteristics.
+The Time Traveler lets you receive a real phone call from any point in history — from the Bronze Age to the year 3000. Each voice you hear is alive in its own era, speaking naturally in English or Spanish, shaped by the beliefs, sounds, and tools of their time.
+
+Built with ElevenLabs, it mixes historical storytelling with real-time audio synthesis — creating an illusion so vivid it feels like you’re truly speaking across centuries.
 
 ## About this project
 
@@ -22,11 +24,9 @@ An AI-powered time traveler that calls you from any historical era! Using Eleven
 - **Rate Limiting**: Built-in protection against abuse with configurable limits
 - **Status Monitoring**: Real-time rate limit status and call monitoring endpoints
 
-## 🔄 How It Works
+## How It Works
 
 The system delivers an **outbound voice experience**: a visitor submits a form (phone, language, year) and immediately receives a call. On pickup, a **live ElevenLabs Agent** converses naturally with era-flavored style.
-
- 
 
  
 
@@ -89,7 +89,7 @@ curl -X POST https://YOUR_NGROK_URL/outbound-call \
 - **Complete Instructions**: [apps/server/README.md](apps/server/README.md) and [apps/web/README.md](apps/web/README.md)
 
  
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables
 
@@ -134,7 +134,7 @@ PERSONALITY: Use these expressions naturally: "{{expression_1}}", "{{expression_
 
 See `apps/server/AGENT_SETUP.md` for complete configuration guide.
 
-## 🔐 JWT Authentication
+## JWT Authentication
 
 The API uses JWT (JSON Web Tokens) for secure authentication. All endpoints require a valid token.
 
@@ -291,7 +291,7 @@ sequenceDiagram
   WS-->>Twilio: socket closes
 ```
 
-## 📊 Performance & Latency Testing
+## Performance & Latency Testing
 
 Performance metrics and latency testing results are available in [`apps/server/metrics/`](apps/server/metrics/README.md), including:
 
@@ -308,4 +308,4 @@ See the metrics folder for detailed test setup, methodology, and results.
 2. **Advanced rate limiting & monitoring**: More granular quotas, per-route policies, dashboards, and deeper test coverage
 3. **Live tool access for the agent**: Controlled tools (search, retrieval, functions) with auditing and safety rails
 
-Built with ❤️ using ElevenLabs, Twilio, and FastAPI.
+Built with ❤️ using ElevenLabs and Twilio.
