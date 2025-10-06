@@ -72,5 +72,24 @@ class AgentManager:
                 print(f"🔄 Using fallback agent ID from ELEVENLABS_AGENT_ID_1")
             return fallback_id
         
-        return agent_id
+        # Sanitize common misconfiguration patterns:
+        # - Value accidentally includes the key (e.g., "ELEVENLABS_AGENT_ID_4=agent_...")
+        # - Trailing whitespace/newlines from env files or CI
+        cleaned_agent_id = agent_id.strip()
+        if "=" in cleaned_agent_id:
+            # If someone exported like: export ELEVENLABS_AGENT_ID_4="ELEVENLABS_AGENT_ID_4=agent_abc"
+            # take the substring after the last '='
+            possible_id = cleaned_agent_id.split("=")[-1].strip()
+            print(
+                f"Detected '=' in {env_var} value; using substring after '=': {possible_id[:8]}..."
+            )
+            cleaned_agent_id = possible_id
+        
+        # Basic validation: ElevenLabs agent IDs typically start with 'agent_'
+        if not cleaned_agent_id.startswith("agent_"):
+            print(
+                f"{env_var} value looks unusual (doesn't start with 'agent_'). Using as-is: {cleaned_agent_id[:12]}..."
+            )
+        
+        return cleaned_agent_id
     
