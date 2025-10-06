@@ -4,6 +4,10 @@ The Time Traveler lets you receive a real phone call from any point in history �
 
 Built with ElevenLabs, it mixes historical storytelling with real-time audio synthesis — creating an illusion so vivid it feels like you’re truly speaking across centuries.
 
+## Demo
+
+[![Watch the demo](https://img.youtube.com/vi/S5TnaWNuPHw/hqdefault.jpg)](https://youtu.be/S5TnaWNuPHw?si=93NcJdDhWSL7WfAX "Watch the demo on YouTube")
+
 ## About this project
 
 - **17 Historical Eras**: From Late Bronze Age (1500 BC) to Far Future (3000+ AD) with authentic personalities
@@ -14,6 +18,7 @@ Built with ElevenLabs, it mixes historical storytelling with real-time audio syn
 - **Real-Time Audio**: Seamless Twilio ↔ ElevenLabs integration with optimized audio conversion
 - **Smart Randomization**: Voice and agent selection with character consistency
 - **Production Ready**: Complete deployment infrastructure with comprehensive documentation
+
 
 ## Features
 
@@ -29,6 +34,8 @@ Built with ElevenLabs, it mixes historical storytelling with real-time audio syn
 The system delivers an **outbound voice experience**: a visitor submits a form (phone, language, year) and immediately receives a call. On pickup, a **live ElevenLabs Agent** converses naturally with era-flavored style.
 
  
+
+
 
 ## 🚀 Quick Start
 
